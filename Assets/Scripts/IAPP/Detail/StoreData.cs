@@ -4,15 +4,29 @@ using System.Collections.Generic;
 
 
 [System.Serializable]
-public class ProductData
+public class IAPProductData
 {
 	[SerializeField]
-	protected IAPProductID brainzProductID;
-	public IAPProductID BrainzProductID
+	protected IAPProductID brainzProductId;
+	public IAPProductID BrainzProductId
 	{
-		get { return brainzProductID; }
+		get { return brainzProductId; }
 	}
-	
+
+	[SerializeField]
+	protected string iapProductId;
+	public string IAPProductId
+	{
+		get { return iapProductId; }
+	}
+
+	[SerializeField]
+	protected float price;
+	public float Price
+	{
+		get { return price; }
+	}
+
 	[SerializeField]
 	protected int amount;
 	public int Amount
@@ -25,20 +39,18 @@ public class ProductData
 public class StoreData
 {
 	[SerializeField]
-	protected List<ProductData> products = new List<ProductData>();
-	public List<ProductData> Products
+	protected List<IAPProductData> iapProducts = new List<IAPProductData>();
+	public List<IAPProductData> IAPProducts
 	{
-		get { return products; }
+		get { return iapProducts; }
 	}
 
-	public int GetProductAmount(IAPProductID productId)
+	public int GetProductAmount(IAPProductID brainzProductId)
 	{
-		foreach (ProductData product in products)
-		{
-			if (product.BrainzProductID == productId)
-				return product.Amount;
-		}
-		
-		return 0;
+		IAPProductData iapProduct = IAPProducts.Find(p => p.BrainzProductId == brainzProductId);
+		if(iapProduct == null)
+			return 0;
+
+		return iapProduct.Amount;
 	}
 }
