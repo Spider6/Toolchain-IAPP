@@ -10,9 +10,9 @@ public class EditorIAPPlatform : DummyIAPPlatform
 	public override void ConsumeProduct(IAPProductID id){}
 	public override void Dispose(){}
 
-	public EditorIAPPlatform (List<IAPProductData> products) : base(products)
+	public EditorIAPPlatform (List<IAPProductData> products, List<IAPProduct> debugProducts) : base(products)
 	{
-		dummyProducts = products;
+		dummyProducts = debugProducts;
 	}
 
 	public override void PurchaseProduct(IAPProductID brainzProductId, int quantity)

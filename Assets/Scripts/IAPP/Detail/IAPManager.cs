@@ -23,7 +23,7 @@ public class IAPManager : MonoBehaviour, IIAPManager
 	private void SetIAPPPlatform (List<IAPProductData> products)
 	{
 		#if UNITY_EDITOR
-		iaPPPlatform = new EditorIAPPlatform (products);
+		iaPPPlatform = new EditorIAPPlatform (products, new List<IAPProduct>());
 		#elif UNITY_IPHONE
 		iaPPPlatform = new StoreKitPlatform(products);
 		#elif UNITY_ANDROID

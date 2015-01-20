@@ -163,6 +163,18 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		this.caller.StopCoroutine (CheckProductsTimeOut ());
 	}
 
+	protected string[] GetAllIAPProductId()
+	{
+		int index = 0;
+		string[] ids = new string[allProducts.Keys.Count];
+		foreach( KeyValuePair<string, IAPProductInfo> entry in allProducts)
+		{
+			ids[index] = entry.Value.BrainzProductId.ToString();
+			index++;
+		}
+		return ids;
+	}
+
 	private IEnumerator CheckProductsTimeOut ()
 	{
 		yield return new WaitForSeconds(10);//TimeOutToStore
