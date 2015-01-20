@@ -5,20 +5,21 @@ using System.Collections.Generic;
 
 public class DummyIAPProduct
 {
-	public DummyIAPProduct (IAPProductID id)
+	public DummyIAPProduct (IAPProductID brainzProductId)
 	{
-		packageName = id.ToString ();
+		BrainzProductId = brainzProductId.ToString ();
 	}
-	public string packageName { get; private set; }
-	public string productId { get{return packageName;} }
-	public string orderId { get {return "rqeoiffaksjldj8490324";} }
-	public string purchaseToken { get {return "98tuoigji4jtiojfkasjdpoifad989jfadofu90eie";} }
+
+	public string BrainzProductId { get; private set; }
+	public string IAPProductId { get{return BrainzProductId;} }
+	public string OrderId { get {return "rqeoiffaksjldj8490324";} }
+	public string PurchaseToken { get {return "98tuoigji4jtiojfkasjdpoifad989jfadofu90eie";} }
 }
 
 public class DummyIAPPlatform : IAPPlatformBase
 {
 	protected DummyIAPProduct lastTransactionData;	
-	private List<IAPProduct> dummyProducts = new List<IAPProduct>();
+	protected List<IAPProduct> dummyProducts;
 
 	public override bool CanMakePayments
 	{
@@ -40,9 +41,13 @@ public class DummyIAPPlatform : IAPPlatformBase
 		get { return IAPPlatformID.Dummy.ToString(); }
 	}
 
-	public DummyIAPPlatform (List<IAPProductData> products) : base(products){}
 	public override void ValidatePedingPurchases (){}
 	public override void ConsumeProduct(IAPProductID id) {}
+
+	public DummyIAPPlatform (List<IAPProductData> products) : base(products)
+	{
+		dummyProducts = new List<IAPProduct>();
+	}
 
 	public override void PurchaseProduct(IAPProductID id, int quantity)
 	{
@@ -58,12 +63,12 @@ public class DummyIAPPlatform : IAPPlatformBase
 	public override Hashtable GetLastTransactionData()
 	{
 		Hashtable transactionData = new Hashtable();
-		transactionData.Add("productIdentifier", lastTransactionData.productId);
-		transactionData.Add("transactionIdentifier", lastTransactionData.orderId);
-		transactionData.Add("base64EncodedTransactionReceipt", lastTransactionData.purchaseToken);
+		transactionData.Add("productIdentifier", lastTransactionData.IAPProductId);
+		transactionData.Add("transactionIdentifier", lastTransactionData.OrderId);
+		transactionData.Add("base64EncodedTransactionReceipt", lastTransactionData.PurchaseToken);
 		transactionData.Add("quantity", 1);
 		
-		IAPProduct product = Products.Find(p => BrainzProductIdToIAPProductId(p.brainzProductId) == lastTransactionData.productId);
+		IAPProduct product = Products.Find(p => BrainzProductIdToIAPProductId(p.brainzProductId) == lastTransactionData.IAPProductId);
 		if(product != null)
 		{
 			transactionData.Add("price", product.price);
@@ -84,12 +89,12 @@ public class DummyIAPPlatform : IAPPlatformBase
 		DummyIAPProduct data = GetDummyIAPProduct (brainzProductId);
 		lastTransactionData = data;
 		Hashtable table = new Hashtable();
-		table.Add ("orderId" , data.orderId);
-		table.Add ("packageName" , data.packageName);
-		table.Add ("productId" , data.productId);
-		table.Add ("purchaseToken" , data.purchaseToken);
+		table.Add ("orderId" , data.OrderId);
+		table.Add ("brainzProductId" , data.BrainzProductId);
+		table.Add ("productId" , data.IAPProductId);
+		table.Add ("purchaseToken" , data.PurchaseToken);
 		table.Add ("pack", brainzProductId.ToString ());
-		table.Add ("receipt", data.orderId);
+		table.Add ("receipt", data.OrderId);
 		return table;
 	}
 

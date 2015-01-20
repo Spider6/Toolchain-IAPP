@@ -7,14 +7,13 @@ using System.Collections.Generic;
 
 public class EditorIAPPlatform : DummyIAPPlatform
 {
-	public override List<IAPProduct> Products
-	{
-		get { return new List<IAPProduct>(); }//DebugPacks
-	}
-
-	public EditorIAPPlatform (List<IAPProductData> products) : base(products){}
 	public override void ConsumeProduct(IAPProductID id){}
 	public override void Dispose(){}
+
+	public EditorIAPPlatform (List<IAPProductData> products) : base(products)
+	{
+		dummyProducts = products;
+	}
 
 	public override void PurchaseProduct(IAPProductID brainzProductId, int quantity)
 	{
