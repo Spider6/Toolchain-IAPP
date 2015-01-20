@@ -6,57 +6,44 @@ using System.Text.RegularExpressions;
 
 public abstract class IAPPlatformBase : IIAPPlatform
 {
-	protected virtual string Package1{ get{ return "motd_500ambers";} }
-	protected virtual string Package2{ get{ return "motd_1100ambers";} }
-	protected virtual string Package3{ get{ return "motd_2400ambers";} }
-	protected virtual string Package4{ get{ return "motd_6750ambers";} }
-	protected virtual string Package5{ get{ return "motd_15000ambers";} }
-
-	protected virtual string SpecialPackage1{ get{ return "motd_hiddentreasure";} }
-	protected virtual string SpecialPackage2{ get{ return "motd_gnomespack";} }
-	protected virtual string SpecialPackage3{ get{ return "motd_luckyrider";} }
-	protected virtual string SpecialPackage4{ get{ return "motd_expertrider";} }
-
-	public abstract void ValidatePedingPurchases ();
-	public virtual event Action<IAPPlatformID> ProductListReceived;
-	public virtual event Action<IAPPlatformID, string /*error*/> ProductListRequestFailed;
-	public virtual event Action<IAPProductID, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessful;
-	public virtual event Action<IAPPlatformID, string /*error*/> PurchaseFailed;
-	public virtual event Action<IAPPlatformID, string /*error*/> PurchaseCancelled;
-	private Dictionary<string,IAPProductInfo> allPackages;
+	public event Action<IAPPlatformID> ProductListReceivedDelegate;
+	public event Action<IAPPlatformID, string /*error*/> ProductListRequestFailedDelegate;
+	public event Action<IAPProductID/*brainzProductId*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
+	public event Action<IAPPlatformID, string /*error*/> PurchaseFailedDelegate;
+	public event Action<IAPPlatformID, string /*error*/> PurchaseCancelledDelegate;
 
 	public abstract bool CanMakePayments { get; }
 	public abstract List<IAPProduct> Products { get; }
-	public abstract IAPPlatformID ID { get; }
+	public abstract IAPPlatformID PlatformId { get; }
 	public abstract string StoreName { get; }
 	public bool HasProducts { get { return Products.Count > 0; } }
 	public string CurrencyCode { get; protected set; }
+	protected MonoBehaviour caller;
 	private bool isTryToLoadProducts = false;
-	private Action<IAPPlatformID,string> callbackTimeOut = null;
-	private MonoBehaviour caller;
-
-	public bool IsSpecialPackage (IAPProductID productId)
-	{
-		return (productId == GetIAPProductID(SpecialPackage1) || productId == GetIAPProductID(SpecialPackage2) || productId == GetIAPProductID(SpecialPackage3) || productId == GetIAPProductID(SpecialPackage4));
-	}
-
-	public IAPProductID GetIApproductByStringProductID (string productID)
-	{
-		return GetIAPProductID (productID);
-	}
+	private Dictionary<string, IAPProductInfo> allProducts;
 	
-	public abstract void PurchaseProduct(IAPProductID id, int quantity);
-	public abstract void ConsumeProduct(IAPProductID id);
+	public IAPProductID GetBrainzProductIdByIAPProductId (string productID)
+	{
+		return IAPProductIDToBrainzProductId (productID);
+	}
+
+	public abstract void ValidatePedingPurchases ();
+	public abstract void PurchaseProduct(IAPProductID brainzProductId, int quantity);
+	public abstract void ConsumeProduct(IAPProductID brainzProductId);
 	public abstract void Dispose();
 	public abstract Hashtable GetLastTransactionData();
 	protected abstract void GetProductsDataFromStore();
 
-	public virtual void RequestAllProductData(MonoBehaviour caller,Action<IAPPlatformID,string> callbackFailed)
+	public IAPPlatformBase(List<IAPProductData> products)
+	{
+		CreateProductInfo(products);
+	}
+
+	public virtual void RequestAllProductData(MonoBehaviour caller)
 	{
 		if(!isTryToLoadProducts)
 		{
 			isTryToLoadProducts = true;
-			callbackTimeOut = callbackFailed;
 			this.caller = caller;
 			this.caller.StartCoroutine (CheckProductsTimeOut ());
 			GetProductsDataFromStore();
@@ -66,10 +53,10 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	private IEnumerator CheckProductsTimeOut ()
 	{
 		yield return new WaitForSeconds(10);//TimeOutToStore
-		if(!HasProducts && callbackTimeOut != null)
+		if(!HasProducts)
 		{
-			callbackTimeOut (ID,"Failed");
-			callbackTimeOut = null;
+			OnProductListRequestFailed (PlatformId,"Failed");
+			ProductListRequestFailedDelegate = null;
 		}
 		this.caller.StopCoroutine (CheckProductsTimeOut ());
 		TurnOffTryToLoadProductsFlag ();
@@ -81,40 +68,22 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		this.caller.StopCoroutine (CheckProductsTimeOut ());
 	}
 
-	public string GetCurrencyPrice (IAPProductID productId)
+	public string GetCurrencyPrice (IAPProductID brainzProductId)
 	{
-		string currentPackage = IAPProductIDToString (productId);
-		IAPProductInfo product = allPackages[currentPackage];
+		string productId = BrainzProductIdToIAPProductId (brainzProductId);
+		IAPProductInfo product = allProducts[productId];
 
-		if(product != null && product.ID == productId)
+		if(product != null && product.BrainzProductId == brainzProductId)
 			return product.CurrencyPrice;
 
 		return string.Empty;
 	}
-	
-	protected string IAPProductIDToString( IAPProductID id )
-	{
-		foreach(KeyValuePair<string, IAPProductInfo> entry in allPackages)
-		{
-			IAPProductInfo info = entry.Value as IAPProductInfo;
-			if(info.ID == id)
-				return entry.Key.ToString ();
-		}
-		return "";
-	}
 
-	protected void CreatePackagesInfo ()
+	private void CreateProductInfo (List<IAPProductData> products)
 	{
-		allPackages = new Dictionary<string, IAPProductInfo> ();
-		allPackages.Add (Package1, new IAPProductInfo( IAPProductID.AmberPack1 , "4.99" ));
-		allPackages.Add (Package2, new IAPProductInfo( IAPProductID.AmberPack2 , "9.99" ));
-		allPackages.Add (Package3, new IAPProductInfo( IAPProductID.AmberPack3 , "19.99" ));
-		allPackages.Add (Package4, new IAPProductInfo( IAPProductID.AmberPack4 , "49.99" ));
-		allPackages.Add (Package5, new IAPProductInfo( IAPProductID.AmberPack5 , "99.99" ));
-		allPackages.Add (SpecialPackage1, new IAPProductInfo( IAPProductID.SpecialPack1 , "2.99" ));
-		allPackages.Add (SpecialPackage2, new IAPProductInfo( IAPProductID.SpecialPack2 , "19.99" ));
-		allPackages.Add (SpecialPackage3, new IAPProductInfo( IAPProductID.SpecialPack3 , "19.99" ));
-		allPackages.Add (SpecialPackage4, new IAPProductInfo( IAPProductID.SpecialPack4 , "49.99" ));
+		allProducts = new Dictionary<string, IAPProductInfo> ();
+		foreach(IAPProductData product in products)
+			allProducts.Add (product.IAPProductId, new IAPProductInfo( product.BrainzProductId , product.Price.ToString()));
 	}
 
 	public string GetPriceWithoutDiscount (IAPProductID product, float discountPercent)
@@ -137,53 +106,75 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		return GetValueFromPriceString (currencyPrice);
 	}
 
-	protected void SetCurrencyPrice (string packageID,string price)
+	protected void SetCurrencyPrice (string productId,string price)
 	{
-		allPackages[packageID].CurrencyPrice = price;
+		allProducts[productId].CurrencyPrice = price;
 	}
 
-	protected bool StringToIAPProductID( string stringId, out IAPProductID id )
+	protected string GetPriceByBrainzIAPProductId (IAPProductID brainzProductID)
 	{
-		stringId = GetPackageID (stringId);
-		
-		if (Enum.IsDefined(typeof(IAPProductID), stringId))
-		{
-			id = (IAPProductID) Enum.Parse(typeof(IAPProductID), stringId, true);
-			return true;
-		}
-		else
-		{
-			id = IAPProductID.ProductCount;  // Assign some value
-			return false;
-		}
-	}
-
-	protected string GetPriceByPackageID (IAPProductID productID)
-	{
-		string priceValue = GetPriceStringByPackageID (productID);
+		string priceValue = GetPriceStringByBrainzProductId (brainzProductID);
 		string price = Regex.Replace (priceValue, "[^,'0-9.]", "");
 		return price;
 	}
 
-	public string GetPriceStringByPackageID (IAPProductID productID)
+	public string GetPriceStringByBrainzProductId (IAPProductID brainzProductID)
 	{
-		foreach(KeyValuePair<string, IAPProductInfo> entry in allPackages)
+		foreach(KeyValuePair<string, IAPProductInfo> entry in allProducts)
 		{
 			IAPProductInfo info = entry.Value as IAPProductInfo;
-			if(info.ID == productID)
+			if(info.BrainzProductId == brainzProductID)
 				return info.Price;
 		}
 		return "0";
 	}
 
-	private string GetPackageID (string productID)
+	protected string BrainzProductIdToIAPProductId(IAPProductID brainzProductId)
 	{
-		return GetIAPProductID (productID).ToString ();
+		foreach(KeyValuePair<string, IAPProductInfo> entry in allProducts)
+		{
+			IAPProductInfo info = entry.Value as IAPProductInfo;
+			if(info.BrainzProductId == brainzProductId)
+				return entry.Key.ToString ();
+		}
+		return string.Empty;
 	}
 
-	private IAPProductID GetIAPProductID (string productID)
+	protected IAPProductID IAPProductIDToBrainzProductId (string productID)
 	{
-		IAPProductInfo info = allPackages [productID] as IAPProductInfo;
-		return info.ID;
+		if(allProducts.ContainsKey(productID))
+		   return allProducts [productID].BrainzProductId;
+
+		return IAPProductID.None;
+	}
+
+	protected void OnProductListReceived(IAPPlatformID platformId)
+	{
+		if(ProductListReceivedDelegate != null)
+			ProductListReceivedDelegate(platformId);
+	}
+
+	protected void OnProductListRequestFailed(IAPPlatformID platformId, string error)
+	{
+		if(ProductListRequestFailedDelegate != null)
+			ProductListRequestFailedDelegate(platformId, error);
+	}
+
+	protected void OnPurchaseSuccessful(IAPProductID brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
+	{
+		if(PurchaseSuccessfulDelegate != null)
+			PurchaseSuccessfulDelegate(brainzProductId, quantity, platformId, transactionData);
+	}
+
+	protected void OnPurchaseFailed(IAPPlatformID platformId, string error)
+	{
+		if(PurchaseFailedDelegate != null)
+			PurchaseFailedDelegate(platformId, error);
+	}
+
+	protected void OnPurchaseCancelled(IAPPlatformID platformId, string error)
+	{
+		if(PurchaseCancelledDelegate != null)
+			PurchaseCancelledDelegate(platformId, error);
 	}
 }

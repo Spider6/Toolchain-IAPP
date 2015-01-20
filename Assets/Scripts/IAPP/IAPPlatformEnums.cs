@@ -7,12 +7,12 @@
 
 public class IAPProductInfo
 {
-	public IAPProductID ID {get; private set;}
+	public IAPProductID BrainzProductId {get; private set;}
 	public string Price {get; private set;}
 	public string CurrencyPrice {get; set;}
-	public IAPProductInfo (IAPProductID id, string price)
+	public IAPProductInfo (IAPProductID brainzProductId, string price)
 	{
-		this.ID = id;
+		this.BrainzProductId = brainzProductId;
 		this.Price = price;
 	}
 	

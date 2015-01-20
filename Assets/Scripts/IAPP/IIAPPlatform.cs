@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -21,7 +21,7 @@ public enum IAPProductID
 [System.Serializable]
 public class IAPProduct
 {
-	public IAPProductID productIdentifier;
+	public IAPProductID brainzProductId;
 	public string title;
 	public string description;
 	public string price;
@@ -32,7 +32,7 @@ public class IAPProduct
 	public override string ToString()
 	{	
 		return System.String.Format( "<Product>\nID: {0}\nTitle: {1}\nDescription: {2}\nPrice: {3}\nPrice Formatted: {4}\nCurrency Symbol: {5}\nCurrency Code: {6}",
-		                            productIdentifier, title, description, price, formattedPrice, currencySymbol, currencyCode );
+		                            brainzProductId, title, description, price, formattedPrice, currencySymbol, currencyCode );
 	}
 }
 
@@ -43,19 +43,18 @@ public interface IIAPPlatform
 	void PurchaseProduct (IAPProductID id, int i);
 	void ConsumeProduct (IAPProductID id);
 	List<IAPProduct> Products{get;}
-	event Action<IAPPlatformID> ProductListReceived;
-	event Action<IAPPlatformID, string /*error*/> ProductListRequestFailed;
-	event Action<IAPProductID /*id*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessful;
-	event Action<IAPPlatformID, string /*error*/> PurchaseFailed;
-	event Action<IAPPlatformID, string /*error*/> PurchaseCancelled;
-	void RequestAllProductData(MonoBehaviour caller,Action<IAPPlatformID,string> callbackFailed);
-	bool IsSpecialPackage (IAPProductID productId);
+	event Action<IAPPlatformID> ProductListReceivedDelegate;
+	event Action<IAPPlatformID, string /*error*/> ProductListRequestFailedDelegate;
+	event Action<IAPProductID /*id*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
+	event Action<IAPPlatformID, string /*error*/> PurchaseFailedDelegate;
+	event Action<IAPPlatformID, string /*error*/> PurchaseCancelledDelegate;
+	void RequestAllProductData(MonoBehaviour caller);
 	string GetCurrencyPrice (IAPProductID productId);
 	string GetPriceWithoutDiscount (IAPProductID product, float discountPercent);
 	float GetPriceInFloat (IAPProductID productID);
 	void ValidatePedingPurchases ();
 	string StoreName { get; }
 	Hashtable GetLastTransactionData();
-	IAPProductID GetIApproductByStringProductID (string productID);
-	string GetPriceStringByPackageID (IAPProductID productID);
+	IAPProductID GetBrainzProductIdByIAPProductId (string productID);
+	string GetPriceStringByBrainzProductId (IAPProductID productID);
 }

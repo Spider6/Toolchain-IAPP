@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class IAPManager : MonoBehaviour, IIAPManager 
 {	
@@ -16,19 +17,19 @@ public class IAPManager : MonoBehaviour, IIAPManager
 
 	private void Awake()
 	{
-		SetIAPPPlatform ();
+		SetIAPPPlatform (new List<IAPProductData>());
 	}
 
-	private void SetIAPPPlatform ()
+	private void SetIAPPPlatform (List<IAPProductData> products)
 	{
 		#if UNITY_EDITOR
-		iaPPPlatform = new EditorIAPPlatform ();
+		iaPPPlatform = new EditorIAPPlatform (products);
 		#elif UNITY_IPHONE
-		iaPPPlatform = new StoreKitPlatform();
+		iaPPPlatform = new StoreKitPlatform(products);
 		#elif UNITY_ANDROID
-		iaPPPlatform = new GoogleIAPPlatform ();
+		iaPPPlatform = new GoogleIAPPlatform (products);
 		#else
-		iaPPPlatform = new DummyIAPPlatform();
+		iaPPPlatform = new DummyIAPPlatform(products);
 		#endif
 	}
 	

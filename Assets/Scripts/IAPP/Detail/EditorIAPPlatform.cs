@@ -6,28 +6,25 @@ using System.Collections.Generic;
 #if UNITY_EDITOR
 
 public class EditorIAPPlatform : DummyIAPPlatform
-{	
-	#region IIAPPlatform implementation
-	public override event Action<IAPPlatformID> ProductListReceived;
-	public override event Action<IAPPlatformID, string /*error*/> ProductListRequestFailed;
-	public override event Action<IAPProductID /*id*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessful;
-	public override event Action<IAPPlatformID, string /*error*/> PurchaseFailed;
-	public override event Action<IAPPlatformID, string /*error*/> PurchaseCancelled;
-
-	public EditorIAPPlatform ()
-	{
-		this.CreatePackagesInfo ();
-	}
-
+{
 	public override List<IAPProduct> Products
 	{
 		get { return new List<IAPProduct>(); }//DebugPacks
 	}
 
+	public EditorIAPPlatform (List<IAPProductData> products) : base(products){}
+	public override void ConsumeProduct(IAPProductID id){}
+	public override void Dispose(){}
+
+	public override void PurchaseProduct(IAPProductID brainzProductId, int quantity)
+	{
+		caller.StartCoroutine (PurchaseAsync(brainzProductId, quantity));
+	}
+
 	protected override void GetProductsDataFromStore ()
 	{
-//		if(HasProducts)
-//			((IAPManager)Locator.IAPManager).StartCoroutine (ReceiveProductListAsync());
+		if(HasProducts)
+			caller.StartCoroutine (ReceiveProductListAsync());
 	}
 	
 	private IEnumerator ReceiveProductListAsync()
@@ -35,37 +32,19 @@ public class EditorIAPPlatform : DummyIAPPlatform
 		yield return new WaitForSeconds (10);//StorePlatformDelayInSeconds
 		foreach (IAPProduct product in Products)
 		{
-			SetCurrencyPrice(product.productIdentifier.ToString (),product.formattedPrice);
+			SetCurrencyPrice(product.brainzProductId.ToString (), product.formattedPrice);
 			CurrencyCode = product.currencyCode;
 		}
 		TurnOffTryToLoadProductsFlag ();
-		if (ProductListReceived != null)
-			ProductListReceived(ID);
+	    OnProductListReceived(PlatformId);
 	}
 	
-	public override void PurchaseProduct(IAPProductID id, int quantity)
-	{
-		//((IAPManager)Locator.IAPManager).StartCoroutine (PurchaseAsync(id, quantity));
-	}
-	
-	private IEnumerator PurchaseAsync(IAPProductID id, int quantity)
+	private IEnumerator PurchaseAsync(IAPProductID brainzProductId, int quantity)
 	{
 		yield return new WaitForSeconds (10);//StorePlatformDelayInSeconds
 
-		if (PurchaseSuccessful != null)
-		{
-			Hashtable table = GetInfoPurchaseProduct (id,quantity);
-			PurchaseSuccessful(id, quantity, ID, table);
-		}
+		Hashtable table = GetInfoPurchaseProduct (brainzProductId, quantity);
+		OnPurchaseSuccessful(brainzProductId, quantity, PlatformId, table);
 	}
-
-	private DummyIAPProduct GetDummyIAPProduct (IAPProductID id)
-	{
-		return new DummyIAPProduct (id);
-	}
-		
-	public override void ConsumeProduct(IAPProductID id){}
-	public override void Dispose(){}
-	#endregion // IIAPPlatform implementation
 }
 #endif
