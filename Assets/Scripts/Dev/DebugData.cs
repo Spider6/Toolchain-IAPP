@@ -10,6 +10,15 @@ public class DebugData : MonoBehaviour
 	[SerializeField]
 	private List<IAPProduct> debugProducts;
 
+	[SerializeField]
+	private string googlePublicKey;
+
+	[SerializeField]
+	private float timeOutToStore;
+
+	[SerializeField]
+	private float storeDebugDelayInSeconds;
+
 	public StoreData SimulateStore 
 	{
 		get { return simulateStore; }
@@ -18,5 +27,20 @@ public class DebugData : MonoBehaviour
 	public List<IAPProduct> DebugProducts
 	{
 		get { return debugProducts;	}
+	}
+
+	public string GooglePublicKey 
+	{
+		get { return googlePublicKey; }
+	}
+
+	public float TimeOutToStore 
+	{
+		get { return timeOutToStore; }
+	}
+
+	public float StoreDebugDelayInSeconds 
+	{
+		get { return storeDebugDelayInSeconds; }
 	}
 }

@@ -12,6 +12,8 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	public event Action<IAPPlatformID, string /*error*/> PurchaseFailedDelegate;
 	public event Action<IAPPlatformID, string /*error*/> PurchaseCancelledDelegate;
 
+	private float timeOutToStore;
+
 	public abstract bool CanMakePayments { get; }
 	public abstract List<IAPProduct> Products { get; }
 	public abstract IAPPlatformID PlatformId { get; }
@@ -44,14 +46,14 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	public abstract Hashtable GetLastTransactionData();
 	protected abstract void GetProductsDataFromStore();
 
-	public IAPPlatformBase(List<IIAPProductData> products)
+	public IAPPlatformBase(List<IIAPProductData> products, float timeOutToStore)
 	{
+		this.timeOutToStore = timeOutToStore;
 		CreateProductInfo(products);
 	}
 
 	public virtual void RequestAllProductData(MonoBehaviour caller)
 	{
-		Debug.Log("Start Request Products: isTryToLoadProducts: " + isTryToLoadProducts);
 		if(!isTryToLoadProducts)
 		{
 			isTryToLoadProducts = true;
@@ -178,9 +180,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 
 	private IEnumerator CheckProductsTimeOut ()
 	{
-		Debug.Log("Start Request Products: isTryToLoadProducts:" + isTryToLoadProducts);
-		yield return new WaitForSeconds(5);//TimeOutToStore
-		Debug.Log("Time Out: HasProducts: " + HasProducts);
+		yield return new WaitForSeconds(timeOutToStore);
 		if(!HasProducts)
 			OnProductListRequestFailed (PlatformId, "Time Out");
 		this.caller.StopCoroutine (CheckProductsTimeOut ());
@@ -191,7 +191,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	{
 		allProducts = new Dictionary<string, IAPProductInfo> ();
 		foreach(IIAPProductData product in products)
-			allProducts.Add (product.IAPProductId, new IAPProductInfo( product.BrainzProductId , product.Price.ToString()));
+			allProducts.Add (product.IAPProductId, new IAPProductInfo( product.BrainzProductId , "0.00"));
 	}
 
 	private float GetValueFromPriceString (string priceCurrency)

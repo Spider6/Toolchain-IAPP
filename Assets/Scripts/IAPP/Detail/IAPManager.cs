@@ -20,19 +20,20 @@ public class IAPManager : MonoBehaviour, IIAPManager
 
 	private void Awake()
 	{
-		SetIAPPPlatform (debugData.SimulateStore.IAPProducts.ConvertAll(p => p as IIAPProductData));
+		SetIAPPPlatform (debugData.SimulateStore.IAPProducts.ConvertAll(p => p as IIAPProductData), debugData.TimeOutToStore);
 	}
 
-	private void SetIAPPPlatform (List<IIAPProductData> products)
+	private void SetIAPPPlatform (List<IIAPProductData> products, float timeOutToStore)
 	{
+
 		#if UNITY_EDITOR
-		iaPPPlatform = new EditorIAPPlatform (products, debugData.DebugProducts);
+		iaPPPlatform = new EditorIAPPlatform (products, timeOutToStore, debugData.DebugProducts, debugData.StoreDebugDelayInSeconds);
 		#elif UNITY_IPHONE
-		iaPPPlatform = new StoreKitPlatform(products);
+		iaPPPlatform = new StoreKitPlatform(products, timeOutToStore);
 		#elif UNITY_ANDROID
-		iaPPPlatform = new GoogleIAPPlatform (products, new IAPGoogleConnector());
+		iaPPPlatform = new GoogleIAPPlatform (products, timeOutToStore, new IAPGoogleConnector(), debugData.GooglePublicKey);
 		#else
-		iaPPPlatform = new DummyIAPPlatform(products);
+		iaPPPlatform = new DummyIAPPlatform(products, timeOutToStore);
 		#endif
 	}
 	

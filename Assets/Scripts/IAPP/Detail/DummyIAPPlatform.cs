@@ -44,7 +44,7 @@ public class DummyIAPPlatform : IAPPlatformBase
 	public override void ValidatePedingPurchases (){}
 	public override void ConsumeProduct(IAPProductID id) {}
 
-	public DummyIAPPlatform (List<IIAPProductData> products) : base(products)
+	public DummyIAPPlatform (List<IIAPProductData> products, float timeOutToStore) : base(products, timeOutToStore)
 	{
 		dummyProducts = new List<IAPProduct>();
 	}

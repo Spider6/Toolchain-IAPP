@@ -5,8 +5,6 @@ using System.Collections.Generic;
 
 public class GoogleIAPPlatform : IAPPlatformBase
 {
-	private const string GOOGLE_IAB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAk20g8MjXMCmmC6OSpqTEFMbF5Z54spBGM5d3iQ/P+QAQDFnKf4wZPCLWzQ446zKIRsZFI2x0JbI6q+1Ypo9Qb5TwZeu5uyvB5eJ5w0Bu+aINL5SYqpsvTWu50vOFIWdd45kC8dG6s5yNMBuOSfFx0XnmyqUsEilTk6FtMojUvpfHapOdbDNypNsC1LXCrtiFvJwMM7/RKuhYBo8iDfch5tuGEu1FR+wLDy3gKMWhLy4tCmgyA4VXP1mMafLbFIinKe5eFu+Y4K/mvU7zsZPIecrWgnuvUBhdzkiaatHbmsGch3k+8rgnu1jcFSAZriCruAuYIZF18DDN8v+zq/d2hQIDAQAB";
-
 	public static event Action BillingSupportedEvent;
 	public static event Action<string> BillingNotSupportedSupportedEvent;
 
@@ -43,10 +41,10 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		UnregisterCallbacks();
 	}
 
-	public GoogleIAPPlatform(List<IIAPProductData> products, IIAPGoogleConnector connector): base(products)
+	public GoogleIAPPlatform(List<IIAPProductData> products, float timeOutToStore, IIAPGoogleConnector connector, string publicKey): base(products, timeOutToStore)
 	{
 		this.connector = connector;
-		this.connector.Initialize(GOOGLE_IAB_KEY);
+		this.connector.Initialize(publicKey);
 		RegisterCallbacks();
 	}
 

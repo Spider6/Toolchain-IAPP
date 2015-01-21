@@ -7,7 +7,6 @@ public interface IIAPProductData
 {
 	IAPProductID BrainzProductId { get; }
 	string IAPProductId { get; }
-    float Price	{ get; }
 }
 
 
@@ -26,13 +25,6 @@ public class IAPProductData : IIAPProductData
 	public string IAPProductId
 	{
 		get { return iapProductId; }
-	}
-
-	[SerializeField]
-	protected float price;
-	public float Price
-	{
-		get { return price; }
 	}
 }
 

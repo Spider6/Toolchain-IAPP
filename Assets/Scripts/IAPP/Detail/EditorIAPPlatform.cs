@@ -7,12 +7,16 @@ using System.Collections.Generic;
 
 public class EditorIAPPlatform : DummyIAPPlatform
 {
+	private float storeDebugDelayInSeconds;
+
 	public override void ConsumeProduct(IAPProductID id){}
 	public override void Dispose(){}
 
-	public EditorIAPPlatform (List<IIAPProductData> products, List<IAPProduct> debugProducts) : base(products)
+	public EditorIAPPlatform (List<IIAPProductData> products, float timeOutToStore,
+	                          List<IAPProduct> debugProducts, float storeDebugDelayInSeconds) : base(products, timeOutToStore)
 	{
 		dummyProducts = debugProducts;
+		this.storeDebugDelayInSeconds = storeDebugDelayInSeconds;
 	}
 
 	public override void PurchaseProduct(IAPProductID brainzProductId, int quantity)
@@ -28,7 +32,7 @@ public class EditorIAPPlatform : DummyIAPPlatform
 	
 	private IEnumerator ReceiveProductListAsync()
 	{
-		yield return new WaitForSeconds (2);//StorePlatformDelayInSeconds
+		yield return new WaitForSeconds (storeDebugDelayInSeconds);
 		foreach (IAPProduct product in Products)
 		{
 			SetCurrencyPrice(product.brainzProductId.ToString (), product.formattedPrice);
@@ -40,7 +44,7 @@ public class EditorIAPPlatform : DummyIAPPlatform
 	
 	private IEnumerator PurchaseAsync(IAPProductID brainzProductId, int quantity)
 	{
-		yield return new WaitForSeconds (10);//StorePlatformDelayInSeconds
+		yield return new WaitForSeconds (storeDebugDelayInSeconds);
 
 		Hashtable table = GetInfoPurchaseProduct (brainzProductId, quantity);
 		OnPurchaseSuccessful(brainzProductId, quantity, PlatformId, table);
