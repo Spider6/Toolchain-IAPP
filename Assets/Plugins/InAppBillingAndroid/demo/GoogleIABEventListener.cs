@@ -68,7 +68,7 @@ public class GoogleIABEventListener : MonoBehaviour
 	{
 		Debug.Log( "purchaseCompleteAwaitingVerificationEvent. purchaseData: " + purchaseData + ", signature: " + signature );
 	}
-	
+
 
 	void purchaseSucceededEvent( GooglePurchase purchase )
 	{
@@ -76,9 +76,9 @@ public class GoogleIABEventListener : MonoBehaviour
 	}
 
 
-	void purchaseFailedEvent( string error )
+	void purchaseFailedEvent( string error, int response )
 	{
-		Debug.Log( "purchaseFailedEvent: " + error );
+		Debug.Log( "purchaseFailedEvent: " + error + ", response: " + response );
 	}
 
 

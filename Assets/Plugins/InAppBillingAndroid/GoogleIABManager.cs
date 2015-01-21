@@ -26,8 +26,8 @@ public class GoogleIABManager : AbstractManager
 	// Fired when a purchase succeeds
 	public static event Action<GooglePurchase> purchaseSucceededEvent;
 
-	// Fired when a purchase fails
-	public static event Action<string> purchaseFailedEvent;
+	// Fired when a purchase fails. Includes the result message and the response (int)
+	public static event Action<string,int> purchaseFailedEvent;
 
 	// Fired when a call to consume a product succeeds
 	public static event Action<GooglePurchase> consumePurchaseSucceededEvent;
@@ -88,9 +88,13 @@ public class GoogleIABManager : AbstractManager
 	}
 
 
-	public void purchaseFailed( string error )
+	public void purchaseFailed( string json )
 	{
-		purchaseFailedEvent.fire( error );
+		if( purchaseFailedEvent != null )
+		{
+			var dict = Json.decode<Dictionary<string,object>>( json );
+			purchaseFailedEvent( dict["result"].ToString(), int.Parse( dict["response"].ToString() ) );
+		}
 	}
 
 

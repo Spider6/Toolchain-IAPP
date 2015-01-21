@@ -46,6 +46,12 @@ public class StoreKitGUIManager : MonoBehaviourGUI
 		}
 
 
+		if( GUILayout.Button( "Enable High Detail Logs" ) )
+		{
+			StoreKitBinding.enableHighDetailLogs( true );
+		}
+
+
 		endColumn( true );
 
 
@@ -102,7 +108,7 @@ public class StoreKitGUIManager : MonoBehaviourGUI
 
 		if( GUILayout.Button( "Display App Store" ) )
 		{
-			StoreKitBinding.displayStoreWithProductId( "305967442" );
+			StoreKitBinding.displayStoreWithProductId( "656176278" );
 		}
 
 		endColumn();

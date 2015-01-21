@@ -30,7 +30,7 @@ public class IAPManager : MonoBehaviour, IIAPManager
 		#elif UNITY_IPHONE
 		iaPPPlatform = new StoreKitPlatform(products);
 		#elif UNITY_ANDROID
-		iaPPPlatform = new GoogleIAPPlatform (products, new IAPGoolgleConnector());
+		iaPPPlatform = new GoogleIAPPlatform (products, new IAPGoogleConnector());
 		#else
 		iaPPPlatform = new DummyIAPPlatform(products);
 		#endif

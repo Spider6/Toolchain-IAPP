@@ -18,15 +18,25 @@ extern "C" {
 }
 #endif
 
+
+#if UNITY_VERSION < 500
 void UnityPause( bool pause );
+#else
+void UnityPause( int pause );
+#endif
 
 
 @implementation P31Unity
 
 + (void)unityPause:(NSNumber*)shouldPause
 {
-	BOOL shouldPauseBool = [shouldPause boolValue];
-	UnityPause( shouldPauseBool );
+#if UNITY_VERSION < 500
+	BOOL shouldPauseValue = [shouldPause boolValue];
+#else
+	int shouldPauseValue = [shouldPause intValue];
+#endif
+	
+	UnityPause( shouldPauseValue );
 }
 
 @end

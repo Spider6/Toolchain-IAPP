@@ -73,7 +73,7 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 			PurchaseSucceededDelegate(CreatePurchaseInfo(iapProductData));
 	}
 
-	private void OnPurchaseFailed(string error)
+	private void OnPurchaseFailed(string error, int quantiy)
 	{
 		if(PurchaseFailedDelegate != null)
 			PurchaseFailedDelegate(error);

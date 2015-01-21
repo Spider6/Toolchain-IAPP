@@ -16,8 +16,8 @@ public class StoreKitBinding
 			return _storeKitCanMakePayments();
 		return false;
 	}
-	
-	
+
+
 	[DllImport("__Internal")]
 	private static extern void _storeKitSetApplicationUsername( string applicationUserName );
 
@@ -28,8 +28,8 @@ public class StoreKitBinding
         if( Application.platform == RuntimePlatform.IPhonePlayer )
 			_storeKitSetApplicationUsername( applicationUserName );
     }
-	
-	
+
+
     [DllImport("__Internal")]
     private static extern string _storeKitGetAppStoreReceiptUrl();
 
@@ -41,6 +41,28 @@ public class StoreKitBinding
 
 		return null;
     }
+
+
+	[DllImport("__Internal")]
+	private static extern void _storeKitSendTransactionUpdateEvents( bool sendTransactionUpdateEvents );
+
+	// By default, the transactionUpdatedEvent will not be called to avoid excessive string allocations. If you pass true to this method it will be called.
+	public static void setShouldSendTransactionUpdateEvents( bool sendTransactionUpdateEvents )
+	{
+		if( Application.platform == RuntimePlatform.IPhonePlayer )
+			_storeKitSendTransactionUpdateEvents( sendTransactionUpdateEvents );
+	}
+
+
+	[DllImport("__Internal")]
+	private static extern void _storeKitEnableHighDetailLogs( bool shouldEnable );
+
+	// Enables/disables high detail logs
+	public static void enableHighDetailLogs( bool shouldEnable )
+	{
+		if( Application.platform == RuntimePlatform.IPhonePlayer )
+			_storeKitEnableHighDetailLogs( shouldEnable );
+	}
 
 
 	[DllImport("__Internal")]
@@ -68,12 +90,23 @@ public class StoreKitBinding
     [DllImport("__Internal")]
     private static extern void _storeKitFinishPendingTransactions();
 
-	// Finishes any and all pending transactions
+	// Finishes any pending transactions that were being tracked
     public static void finishPendingTransactions()
     {
         if( Application.platform == RuntimePlatform.IPhonePlayer )
 			_storeKitFinishPendingTransactions();
     }
+
+
+	[DllImport("__Internal")]
+	private static extern void _storeKitForceFinishPendingTransactions();
+
+	// Force finishes any and all pending transactions including those being tracked and any random transactions in Apple's queue
+	public static void forceFinishPendingTransactions()
+	{
+		if( Application.platform == RuntimePlatform.IPhonePlayer )
+			_storeKitFinishPendingTransactions();
+	}
 
 
     [DllImport("__Internal")]
@@ -85,8 +118,8 @@ public class StoreKitBinding
         if( Application.platform == RuntimePlatform.IPhonePlayer )
 			_storeKitFinishPendingTransaction( transactionIdentifier );
     }
-	
-	
+
+
     [DllImport("__Internal")]
     private static extern void _storeKitPauseDownloads();
 
@@ -96,8 +129,8 @@ public class StoreKitBinding
         if( Application.platform == RuntimePlatform.IPhonePlayer )
 			_storeKitPauseDownloads();
     }
-	
-	
+
+
     [DllImport("__Internal")]
     private static extern void _storeKitResumeDownloads();
 
@@ -107,8 +140,8 @@ public class StoreKitBinding
         if( Application.platform == RuntimePlatform.IPhonePlayer )
 			_storeKitResumeDownloads();
     }
-	
-	
+
+
     [DllImport("__Internal")]
     private static extern void _storeKitCancelDownloads();
 
@@ -151,13 +184,13 @@ public class StoreKitBinding
 
 
 	[DllImport("__Internal")]
-	private static extern void _storeKitDisplayStoreWithProductId( string productId );
+	private static extern void _storeKitDisplayStoreWithProductId( string productId, string affiliateToken );
 
-	// iOS 6+ only! Displays the App Store with the given productId in app
-	public static void displayStoreWithProductId( string productId )
+	// iOS 6+ only! Displays the App Store with the given productId in app. The affiliateToken parameter will only work on iOS 8+.
+	public static void displayStoreWithProductId( string productId, string affiliateToken = null )
 	{
 		if( Application.platform == RuntimePlatform.IPhonePlayer )
-			_storeKitDisplayStoreWithProductId( productId );
+			_storeKitDisplayStoreWithProductId( productId, affiliateToken );
 	}
 
 }

@@ -16,7 +16,7 @@ public class TestShop : MonoBehaviour
 		get{ return iapManager.IAPPlatform; }
 	}
 
-	private void Awake()
+	private void Start()
 	{
 		CurrentIAPPlatform.ProductListReceivedDelegate += OnProductListReceived;
 		CurrentIAPPlatform.ProductListRequestFailedDelegate += OnProductListRequestFiled;

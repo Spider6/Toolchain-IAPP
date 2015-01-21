@@ -51,6 +51,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 
 	public virtual void RequestAllProductData(MonoBehaviour caller)
 	{
+		Debug.Log("Start Request Products: isTryToLoadProducts: " + isTryToLoadProducts);
 		if(!isTryToLoadProducts)
 		{
 			isTryToLoadProducts = true;
@@ -177,12 +178,11 @@ public abstract class IAPPlatformBase : IIAPPlatform
 
 	private IEnumerator CheckProductsTimeOut ()
 	{
-		yield return new WaitForSeconds(10);//TimeOutToStore
+		Debug.Log("Start Request Products: isTryToLoadProducts:" + isTryToLoadProducts);
+		yield return new WaitForSeconds(5);//TimeOutToStore
+		Debug.Log("Time Out: HasProducts: " + HasProducts);
 		if(!HasProducts)
-		{
-			OnProductListRequestFailed (PlatformId,"Failed");
-			ProductListRequestFailedDelegate = null;
-		}
+			OnProductListRequestFailed (PlatformId, "Time Out");
 		this.caller.StopCoroutine (CheckProductsTimeOut ());
 		TurnOffTryToLoadProductsFlag ();
 	}

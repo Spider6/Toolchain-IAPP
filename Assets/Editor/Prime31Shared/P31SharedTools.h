@@ -7,6 +7,10 @@
 //
 
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+
+
 @interface P31 : NSObject
 
 + (BOOL)isValidJsonObject:(NSObject*)object;
@@ -23,3 +27,4 @@
 
 @end
 
+#endif
