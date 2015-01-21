@@ -4,7 +4,10 @@ using System.Collections.Generic;
 
 public class IAPManager : MonoBehaviour, IIAPManager 
 {	
-	public IIAPPlatform iaPPPlatform;
+	[SerializeField]
+	private DebugData debugData;
+
+	private IIAPPlatform iaPPPlatform;
 	public IIAPPlatform IAPPlatform
 	{
 		get{ return iaPPPlatform;}
@@ -17,13 +20,13 @@ public class IAPManager : MonoBehaviour, IIAPManager
 
 	private void Awake()
 	{
-		SetIAPPPlatform (new List<IIAPProductData>());
+		SetIAPPPlatform (debugData.SimulateStore.IAPProducts.ConvertAll(p => p as IIAPProductData));
 	}
 
 	private void SetIAPPPlatform (List<IIAPProductData> products)
 	{
 		#if UNITY_EDITOR
-		iaPPPlatform = new EditorIAPPlatform (products, new List<IAPProduct>());
+		iaPPPlatform = new EditorIAPPlatform (products, debugData.DebugProducts);
 		#elif UNITY_IPHONE
 		iaPPPlatform = new StoreKitPlatform(products);
 		#elif UNITY_ANDROID

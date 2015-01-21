@@ -5,16 +5,11 @@ using System;
 
 public enum IAPProductID 
 {
-	AmberPack1 = 0,
-	AmberPack2 = 1,
-	AmberPack3 = 2,
-	AmberPack4 = 3,
-	AmberPack5 = 4,
-	SpecialPack1 = 5,
-	SpecialPack2 = 6,
-	SpecialPack3 = 7,
-	SpecialPack4 = 8,
-	ProductCount = 9,
+	PouchOfJade = 0,
+	HeapOfJade = 1,
+	ChestOfJade  = 2,
+	CartOfJade = 3,
+	VaultOfJade = 4,
 	None = 10,
 }
 

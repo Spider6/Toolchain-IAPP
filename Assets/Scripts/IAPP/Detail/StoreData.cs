@@ -40,8 +40,8 @@ public class IAPProductData : IIAPProductData
 public class StoreData
 {
 	[SerializeField]
-	protected List<IIAPProductData> iapProducts = new List<IIAPProductData>();
-	public List<IIAPProductData> IAPProducts
+	protected List<IAPProductData> iapProducts = new List<IAPProductData>();
+	public List<IAPProductData> IAPProducts
 	{
 		get { return iapProducts; }
 	}

@@ -28,7 +28,7 @@ public class EditorIAPPlatform : DummyIAPPlatform
 	
 	private IEnumerator ReceiveProductListAsync()
 	{
-		yield return new WaitForSeconds (10);//StorePlatformDelayInSeconds
+		yield return new WaitForSeconds (2);//StorePlatformDelayInSeconds
 		foreach (IAPProduct product in Products)
 		{
 			SetCurrencyPrice(product.brainzProductId.ToString (), product.formattedPrice);
