@@ -11,11 +11,11 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	public static event Action<string> BillingNotSupportedSupportedEvent;
 
 	private List<IAPProduct> products = new List<IAPProduct>();
-	private List<GooglePurchase> pedingPurchases = new List<GooglePurchase>();
-	private GooglePurchase lastTransactionData;
+	private List<IGooglePurchaseInfo> pedingPurchases = new List<IGooglePurchaseInfo>();
+	private IGooglePurchaseInfo lastTransactionData;
 	private bool supportsBilling = false;
 	private Dictionary<string,string> realPrices = new Dictionary<string,string> ();
-	private IIAPGoolgleConnector connector;
+	private IIAPGoogleConnector connector;
 
 	public override bool CanMakePayments
 	{
@@ -43,7 +43,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		UnregisterCallbacks();
 	}
 
-	public GoogleIAPPlatform(List<IIAPProductData> products, IIAPGoolgleConnector connector): base(products)
+	public GoogleIAPPlatform(List<IIAPProductData> products, IIAPGoogleConnector connector): base(products)
 	{
 		this.connector = connector;
 		this.connector.Initialize(GOOGLE_IAB_KEY);
@@ -53,12 +53,12 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	public override Hashtable GetLastTransactionData()
 	{
 		Hashtable transactionData = new Hashtable();
-		transactionData.Add("productIdentifier", lastTransactionData.productId);
-		transactionData.Add("transactionIdentifier", lastTransactionData.orderId);
-		transactionData.Add("base64EncodedTransactionReceipt", lastTransactionData.purchaseToken);
+		transactionData.Add("productIdentifier", lastTransactionData.ProductId);
+		transactionData.Add("transactionIdentifier", lastTransactionData.OrderId);
+		transactionData.Add("base64EncodedTransactionReceipt", lastTransactionData.PurchaseToken);
 		transactionData.Add("quantity", 1);
 		
-		IAPProduct product = products.Find(p => BrainzProductIdToIAPProductId(p.brainzProductId) == lastTransactionData.productId);
+		IAPProduct product = products.Find(p => BrainzProductIdToIAPProductId(p.brainzProductId) == lastTransactionData.ProductId);
 		if (product != null)
 		{
 			string price = GetPriceByBrainzIAPProductId (product.brainzProductId);
@@ -82,7 +82,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 
 	public override void ValidatePedingPurchases ()
 	{
-		foreach (GooglePurchase purchaseProduct in pedingPurchases)
+		foreach (IGooglePurchaseInfo purchaseProduct in pedingPurchases)
 			OnPurchaseSuccedded (purchaseProduct);
 	}
 
@@ -94,8 +94,8 @@ public class GoogleIAPPlatform : IAPPlatformBase
 
 	private void RemovePedingProductToPurchase (IAPProductID brainzProductId)
 	{
-		GooglePurchase currentProduct;
-		GooglePurchase product = pedingPurchases.Find(p => p.productId == BrainzProductIdToIAPProductId (brainzProductId));
+		IGooglePurchaseInfo currentProduct;
+		IGooglePurchaseInfo product = pedingPurchases.Find(p => p.ProductId == BrainzProductIdToIAPProductId (brainzProductId));
 		currentProduct = product;
 		
 		if (currentProduct != null)
@@ -122,7 +122,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		connector.PurchaseFailedDelegate -= OnPurchaseFailed;
 	}
 
-	private void OnIAPProductListReceived(List<GooglePurchase> purchasesList, List<GoogleSkuInfo> iabProductList)
+	private void OnIAPProductListReceived(List<IGooglePurchaseInfo> purchasesList, List<IGoogleProductInfo> iabProductList)
 	{
 		Debug.Log("Pending purchases: " + purchasesList.Count + " List products: " + iabProductList.Count);
 		products.Clear();
@@ -134,22 +134,22 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		OnProductListReceived(PlatformId);
 	}
 
-	private void FillProductList (List<GoogleSkuInfo> iabProductList)
+	private void FillProductList (List<IGoogleProductInfo> iabProductList)
 	{
-		foreach (GoogleSkuInfo iabProduct in iabProductList) 
+		foreach (IGoogleProductInfo iabProduct in iabProductList) 
 		{
 			Debug.Log (iabProduct.ToString () + " this is the products to purchase");
-			IAPProductID brainzProductId = IAPProductIDToBrainzProductId (iabProduct.productId);
+			IAPProductID brainzProductId = IAPProductIDToBrainzProductId (iabProduct.ProductId);
 			if (brainzProductId != IAPProductID.None)
 				AddIAPProduct (iabProduct, brainzProductId);
 			else
-				Debug.LogWarning ("An unrecognized IAP product was reported by Google Store. Identifier: " + iabProduct.productId);
+				Debug.LogWarning ("An unrecognized IAP product was reported by Google Store. Identifier: " + iabProduct.ProductId);
 		}
 	}
 
-	private void AddIAPProduct (GoogleSkuInfo iabProduct, IAPProductID brainzProductId)
+	private void AddIAPProduct (IGoogleProductInfo iabProduct, IAPProductID brainzProductId)
 	{
-		if (iabProduct.priceCurrencyCode != null && iabProduct.description != null && iabProduct.price != null && iabProduct.title != null) 
+		if (iabProduct.PriceCurrencyCode != null && iabProduct.Description != null && iabProduct.Price != null && iabProduct.Title != null) 
 		{
 			IAPProduct newProduct = CreateIAPProduct (iabProduct, brainzProductId);
 			products.Add (newProduct);
@@ -160,24 +160,24 @@ public class GoogleIAPPlatform : IAPPlatformBase
 			Debug.LogWarning ("IAP product ignored because it contains null data: " + brainzProductId);
 	}
 
-	private void UpdateProductData (GoogleSkuInfo iabProduct, IAPProduct newProduct)
+	private void UpdateProductData (IGoogleProductInfo iabProduct, IAPProduct newProduct)
 	{
 		CurrencyCode = newProduct.currencyCode;
-		if (!realPrices.ContainsKey (iabProduct.productId))
-			realPrices.Add (iabProduct.productId, iabProduct.price);
-		SetCurrencyPrice (iabProduct.productId, iabProduct.price);
+		if (!realPrices.ContainsKey (iabProduct.ProductId))
+			realPrices.Add (iabProduct.ProductId, iabProduct.Price);
+		SetCurrencyPrice (iabProduct.ProductId, iabProduct.Price);
 	}
 
-	private IAPProduct CreateIAPProduct(GoogleSkuInfo iabProduct, IAPProductID brainzProductId)
+	private IAPProduct CreateIAPProduct(IGoogleProductInfo iabProduct, IAPProductID brainzProductId)
 	{
 		IAPProduct newProduct = new IAPProduct();
-		newProduct.currencySymbol = iabProduct.priceCurrencyCode;
-		newProduct.currencyCode = iabProduct.priceCurrencyCode;
-		newProduct.description = iabProduct.description;
-		newProduct.price = iabProduct.price;
-		newProduct.formattedPrice = iabProduct.price;
+		newProduct.currencySymbol = iabProduct.PriceCurrencyCode;
+		newProduct.currencyCode = iabProduct.PriceCurrencyCode;
+		newProduct.description = iabProduct.Description;
+		newProduct.price = iabProduct.Price;
+		newProduct.formattedPrice = iabProduct.Price;
 		newProduct.brainzProductId = brainzProductId;
-		newProduct.title = iabProduct.title;
+		newProduct.title = iabProduct.Title;
 
 		return newProduct;
 	}
@@ -198,31 +198,31 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		OnPurchaseFailed (PlatformId, error);
 	}
 	
-	private void OnPurchaseSuccedded(GooglePurchase data)
+	private void OnPurchaseSuccedded(IGooglePurchaseInfo data)
 	{
-		IAPProductID brainzProductId = IAPProductIDToBrainzProductId(data.productId);
+		IAPProductID brainzProductId = IAPProductIDToBrainzProductId(data.ProductId);
 		if ( brainzProductId != IAPProductID.None)
 		{
 			lastTransactionData = data;
 			OnPurchaseSuccessful(brainzProductId, 1, PlatformId, CreateHashtableForPurchaseSuccedded(data, brainzProductId));
 		}
 		else
-			Debug.LogWarning("An unrecognized IAP product was reported by Google IAB. Identifier=" + data.productId);
+			Debug.LogWarning("An unrecognized IAP product was reported by Google IAB. Identifier=" + data.ProductId);
 	}
 
-	private Hashtable CreateHashtableForPurchaseSuccedded(GooglePurchase data, IAPProductID brainzProductId)
+	private Hashtable CreateHashtableForPurchaseSuccedded(IGooglePurchaseInfo data, IAPProductID brainzProductId)
 	{
 		Hashtable table = new Hashtable();
-		table.Add ("orderId" , data.orderId);
+		table.Add ("orderId" , data.OrderId);
 		table.Add ("brainzProductId" , brainzProductId.ToString ());
-		table.Add ("purchaseTime" , data.purchaseTime.ToString ());
-		table.Add ("productId" , data.productId);
-		table.Add ("purchaseState" , data.purchaseState.ToString ());
-		table.Add ("developerPayload" , data.developerPayload);
-		table.Add ("receipt", data.orderId);
-		table.Add ("price", realPrices[data.productId]);
-		table.Add ("signature", data.signature);
-		table.Add ("r_data", data.originalJson);
+		table.Add ("purchaseTime" , data.PurchaseTime.ToString ());
+		table.Add ("productId" , data.ProductId);
+		table.Add ("purchaseState" , data.PurchaseState);
+		table.Add ("developerPayload" , data.DeveloperPayload);
+		table.Add ("receipt", data.OrderId);
+		table.Add ("price", realPrices[data.ProductId]);
+		table.Add ("signature", data.Signature);
+		table.Add ("r_data", data.OriginalJson);
 
 		return table;
 	}
