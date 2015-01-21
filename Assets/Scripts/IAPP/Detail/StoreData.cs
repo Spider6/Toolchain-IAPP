@@ -2,8 +2,17 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
+public interface IIAPProductData
+{
+	IAPProductID BrainzProductId { get; }
+	string IAPProductId { get; }
+    float Price	{ get; }
+}
+
+
 [System.Serializable]
-public class IAPProductData
+public class IAPProductData : IIAPProductData
 {
 	[SerializeField]
 	protected IAPProductID brainzProductId;
@@ -25,31 +34,15 @@ public class IAPProductData
 	{
 		get { return price; }
 	}
-
-	[SerializeField]
-	protected int amount;
-	public int Amount
-	{
-		get { return amount; }
-	}
 }
 
 [System.Serializable]
 public class StoreData
 {
 	[SerializeField]
-	protected List<IAPProductData> iapProducts = new List<IAPProductData>();
-	public List<IAPProductData> IAPProducts
+	protected List<IIAPProductData> iapProducts = new List<IIAPProductData>();
+	public List<IIAPProductData> IAPProducts
 	{
 		get { return iapProducts; }
-	}
-
-	public int GetProductAmount(IAPProductID brainzProductId)
-	{
-		IAPProductData iapProduct = IAPProducts.Find(p => p.BrainzProductId == brainzProductId);
-		if(iapProduct == null)
-			return 0;
-
-		return iapProduct.Amount;
 	}
 }

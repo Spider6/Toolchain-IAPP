@@ -44,7 +44,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	public abstract Hashtable GetLastTransactionData();
 	protected abstract void GetProductsDataFromStore();
 
-	public IAPPlatformBase(List<IAPProductData> products)
+	public IAPPlatformBase(List<IIAPProductData> products)
 	{
 		CreateProductInfo(products);
 	}
@@ -187,10 +187,10 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		TurnOffTryToLoadProductsFlag ();
 	}
 
-	private void CreateProductInfo (List<IAPProductData> products)
+	private void CreateProductInfo (List<IIAPProductData> products)
 	{
 		allProducts = new Dictionary<string, IAPProductInfo> ();
-		foreach(IAPProductData product in products)
+		foreach(IIAPProductData product in products)
 			allProducts.Add (product.IAPProductId, new IAPProductInfo( product.BrainzProductId , product.Price.ToString()));
 	}
 

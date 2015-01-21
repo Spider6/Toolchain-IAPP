@@ -17,17 +17,17 @@ public class IAPManager : MonoBehaviour, IIAPManager
 
 	private void Awake()
 	{
-		SetIAPPPlatform (new List<IAPProductData>());
+		SetIAPPPlatform (new List<IIAPProductData>());
 	}
 
-	private void SetIAPPPlatform (List<IAPProductData> products)
+	private void SetIAPPPlatform (List<IIAPProductData> products)
 	{
 		#if UNITY_EDITOR
 		iaPPPlatform = new EditorIAPPlatform (products, new List<IAPProduct>());
 		#elif UNITY_IPHONE
 		iaPPPlatform = new StoreKitPlatform(products);
 		#elif UNITY_ANDROID
-		iaPPPlatform = new GoogleIAPPlatform (products);
+		iaPPPlatform = new GoogleIAPPlatform (products, new IAPGoolgleConnector());
 		#else
 		iaPPPlatform = new DummyIAPPlatform(products);
 		#endif

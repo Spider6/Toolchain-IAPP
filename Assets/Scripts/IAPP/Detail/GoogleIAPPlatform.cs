@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-#if UNITY_ANDROID
 public class GoogleIAPPlatform : IAPPlatformBase
 {
 	private const string GOOGLE_IAB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyI70qk86LJd/obggjgfETOccmXs5BmFmppuSad2EQ0CkJuysTb9QsvPj2d/vYxWQKdtx/fEIdG9AO6nyJ8q1u1fuZdRPT1ImZOxT9bAYNJuqWXGKdxcSKQPQ0gcNQ+1FA5z7+GwDv43QqJrhftANe4Td/nIRxex9FE7Eb0FK4XDRFn1nDNCwf02jAmKfz2wUumsKUdspfzOR0ZCo6A659nzg4/86tB0GdZ6rM9XfNviKRNRlMe4gkcIcbY2yXR5bIH71GNjWrQ+UwJNpJK9AlYyWt9YfPrXV9lGSaTaJV7FpXRoeMjsV3O3GrP+NfFkLjKjSo+0zcu5cVrh8MeRPrwIDAQAB";
@@ -16,7 +15,8 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	private GooglePurchase lastTransactionData;
 	private bool supportsBilling = false;
 	private Dictionary<string,string> realPrices = new Dictionary<string,string> ();
-	
+	private IIAPGoolgleConnector connector;
+
 	public override bool CanMakePayments
 	{
 		get { return supportsBilling; }
@@ -43,9 +43,10 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		UnregisterCallbacks();
 	}
 
-	public GoogleIAPPlatform(List<IAPProductData> products): base(products)
+	public GoogleIAPPlatform(List<IIAPProductData> products, IIAPGoolgleConnector connector): base(products)
 	{
-		GoogleIAB.init(GOOGLE_IAB_KEY);
+		this.connector = connector;
+		this.connector.Initialize(GOOGLE_IAB_KEY);
 		RegisterCallbacks();
 	}
 
@@ -70,13 +71,13 @@ public class GoogleIAPPlatform : IAPPlatformBase
 
 	public override void PurchaseProduct (IAPProductID brainzProductId, int quantity)
 	{
-		GoogleIAB.purchaseProduct (BrainzProductIdToIAPProductId(brainzProductId), Guid.NewGuid().ToString ());
+		connector.PurchaseProduct (BrainzProductIdToIAPProductId(brainzProductId), Guid.NewGuid().ToString ());
 	}
 	
 	public override void ConsumeProduct (IAPProductID brainzProductId)
 	{
 		RemovePedingProductToPurchase (brainzProductId);
-		GoogleIAB.consumeProduct(BrainzProductIdToIAPProductId(brainzProductId));
+		connector.ConsumeProduct(BrainzProductIdToIAPProductId(brainzProductId));
 	}
 
 	public override void ValidatePedingPurchases ()
@@ -88,7 +89,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	protected override void GetProductsDataFromStore ()
 	{
 		products.Clear();
-		GoogleIAB.queryInventory(GetAllIAPProductId());
+		connector.GetProducts(GetAllIAPProductId());
 	}
 
 	private void RemovePedingProductToPurchase (IAPProductID brainzProductId)
@@ -103,25 +104,25 @@ public class GoogleIAPPlatform : IAPPlatformBase
 
 	private void RegisterCallbacks()
 	{
-		GoogleIABManager.billingSupportedEvent += OnBillingEvent;
-		GoogleIABManager.billingNotSupportedEvent += OnBillingNotSupportedEvent;
-		GoogleIABManager.queryInventorySucceededEvent += OnProductListReceived;
-		GoogleIABManager.queryInventoryFailedEvent += OnProductListRequestFailed;
-		GoogleIABManager.purchaseSucceededEvent += OnPurchaseSuccedded;
-		GoogleIABManager.purchaseFailedEvent += OnPurchaseFailed;
+		connector.BillingSupportedDelegate += OnBillingEvent;
+		connector.BillingNotSupportedDelegate += OnBillingNotSupportedEvent;
+		connector.ProductListReceivedDelegate += OnIAPProductListReceived;
+		connector.ProductListRequestFailedDelegate += OnProductListRequestFailed;
+		connector.PurchaseSucceededDelegate += OnPurchaseSuccedded;
+		connector.PurchaseFailedDelegate += OnPurchaseFailed;
 	}
 	
 	private void UnregisterCallbacks()
 	{
-		GoogleIABManager.billingSupportedEvent -= OnBillingEvent;
-		GoogleIABManager.billingNotSupportedEvent -= OnBillingNotSupportedEvent;
-		GoogleIABManager.queryInventorySucceededEvent -= OnProductListReceived;
-		GoogleIABManager.queryInventoryFailedEvent -= OnProductListRequestFailed;
-		GoogleIABManager.purchaseSucceededEvent -= OnPurchaseSuccedded;
-		GoogleIABManager.purchaseFailedEvent -= OnPurchaseFailed;
+		connector.BillingSupportedDelegate -= OnBillingEvent;
+		connector.BillingNotSupportedDelegate -= OnBillingNotSupportedEvent;
+		connector.ProductListReceivedDelegate -= OnIAPProductListReceived;
+		connector.ProductListRequestFailedDelegate -= OnProductListRequestFailed;
+		connector.PurchaseSucceededDelegate -= OnPurchaseSuccedded;
+		connector.PurchaseFailedDelegate -= OnPurchaseFailed;
 	}
 
-	private void OnProductListReceived(List<GooglePurchase> purchasesList, List<GoogleSkuInfo> iabProductList)
+	private void OnIAPProductListReceived(List<GooglePurchase> purchasesList, List<GoogleSkuInfo> iabProductList)
 	{
 		Debug.Log("Pending purchases: " + purchasesList.Count + " List products: " + iabProductList.Count);
 		products.Clear();
@@ -152,14 +153,19 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		{
 			IAPProduct newProduct = CreateIAPProduct (iabProduct, brainzProductId);
 			products.Add (newProduct);
-			CurrencyCode = newProduct.currencyCode;
-			if (!realPrices.ContainsKey (iabProduct.productId))
-				realPrices.Add (iabProduct.productId, iabProduct.price);
-			SetCurrencyPrice (iabProduct.productId, iabProduct.price);
+			UpdateProductData (iabProduct, newProduct);
 			Debug.Log ("Loaded product: " + newProduct.ToString ());
 		}
 		else
 			Debug.LogWarning ("IAP product ignored because it contains null data: " + brainzProductId);
+	}
+
+	private void UpdateProductData (GoogleSkuInfo iabProduct, IAPProduct newProduct)
+	{
+		CurrencyCode = newProduct.currencyCode;
+		if (!realPrices.ContainsKey (iabProduct.productId))
+			realPrices.Add (iabProduct.productId, iabProduct.price);
+		SetCurrencyPrice (iabProduct.productId, iabProduct.price);
 	}
 
 	private IAPProduct CreateIAPProduct(GoogleSkuInfo iabProduct, IAPProductID brainzProductId)
@@ -237,4 +243,3 @@ public class GoogleIAPPlatform : IAPPlatformBase
 			BillingNotSupportedSupportedEvent (error);
 	}
 }
-#endif
