@@ -3,8 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
-
 public class EditorIAPPlatform : DummyIAPPlatform
 {
 	private float storeDebugDelayInSeconds;
@@ -50,4 +48,3 @@ public class EditorIAPPlatform : DummyIAPPlatform
 		OnPurchaseSuccessful(brainzProductId, quantity, PlatformId, table);
 	}
 }
-#endif

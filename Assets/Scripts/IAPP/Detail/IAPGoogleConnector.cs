@@ -16,6 +16,7 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 	public void Initialize(string publicKey)
 	{
 		GoogleIAB.init(publicKey);
+		RegisterCallbacks();
 	}
 
 	public void PurchaseProduct(string iapProductId, string developerPayload)
@@ -30,6 +31,8 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 
 	public void GetProducts(string[] iapProductIds)
 	{
+		foreach(string id in iapProductIds)
+			Debug.Log("IdProduct: " + id);
 		GoogleIAB.queryInventory(iapProductIds);
 	}
 
@@ -57,6 +60,7 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 	
 	private void OnProductListReceived(List<GooglePurchase> purchasesList, List<GoogleSkuInfo> iabProductList)
 	{
+		Debug.Log("purchasesList: " + purchasesList.Count + " iabProductList: " + iabProductList);
 		if(ProductListReceivedDelegate != null)
 			ProductListReceivedDelegate(ToPurchaseInfoList(purchasesList), ToProductInfoList(iabProductList));
 	}

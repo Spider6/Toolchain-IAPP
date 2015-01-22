@@ -172,7 +172,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		string[] ids = new string[allProducts.Keys.Count];
 		foreach( KeyValuePair<string, IAPProductInfo> entry in allProducts)
 		{
-			ids[index] = entry.Value.BrainzProductId.ToString();
+			ids[index] = entry.Key;
 			index++;
 		}
 		return ids;

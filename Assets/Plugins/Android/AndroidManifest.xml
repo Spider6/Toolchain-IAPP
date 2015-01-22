@@ -16,5 +16,6 @@
       <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
       <meta-data android:name="unityplayer.ForwardNativeEventsToDalvik" android:value="true" />
     </activity>
+    <activity android:name="com.prime31.GoogleIABProxyActivity"></activity>
   </application>
 </manifest>

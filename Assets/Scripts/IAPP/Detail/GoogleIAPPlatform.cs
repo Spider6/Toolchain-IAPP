@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class GoogleIAPPlatform : IAPPlatformBase
 {
-	public static event Action BillingSupportedEvent;
-	public static event Action<string> BillingNotSupportedSupportedEvent;
+	public event Action BillingSupportedDelegate;
+	public event Action<string> BillingNotSupportedSupportedDelegate;
 
 	private List<IAPProduct> products = new List<IAPProduct>();
 	private List<IGooglePurchaseInfo> pedingPurchases = new List<IGooglePurchaseInfo>();
@@ -44,8 +44,8 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	public GoogleIAPPlatform(List<IIAPProductData> products, float timeOutToStore, IIAPGoogleConnector connector, string publicKey): base(products, timeOutToStore)
 	{
 		this.connector = connector;
-		this.connector.Initialize(publicKey);
 		RegisterCallbacks();
+		this.connector.Initialize(publicKey);
 	}
 
 	public override Hashtable GetLastTransactionData()
@@ -229,15 +229,15 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	{
 		supportsBilling = true;
 		
-		if (BillingSupportedEvent != null)
-			BillingSupportedEvent ();
+		if (BillingSupportedDelegate != null)
+			BillingSupportedDelegate ();
 	}
 	
 	private void OnBillingNotSupportedEvent(string error)
 	{
 		supportsBilling = false;
 		
-		if (BillingNotSupportedSupportedEvent != null)
-			BillingNotSupportedSupportedEvent (error);
+		if (BillingNotSupportedSupportedDelegate != null)
+			BillingNotSupportedSupportedDelegate (error);
 	}
 }
