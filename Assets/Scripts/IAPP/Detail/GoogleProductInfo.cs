@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+#if UNITY_ANDROID
 public class GoogleProductInfo : IGoogleProductInfo
 {
 	public GoogleSkuInfo ProductInfo
@@ -34,3 +35,4 @@ public class GoogleProductInfo : IGoogleProductInfo
 		get {return ProductInfo.priceCurrencyCode;}
 	}
 }
+#endif

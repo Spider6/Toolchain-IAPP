@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+#if UNITY_ANDROID
 public class GooglePurchaseInfo : IGooglePurchaseInfo
 {
 	public GooglePurchase PurchaseInfo
@@ -48,3 +49,4 @@ public class GooglePurchaseInfo : IGooglePurchaseInfo
 		get { return PurchaseInfo.developerPayload; }
 	}
 }
+#endif
