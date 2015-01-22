@@ -3,20 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public enum IAPProductID 
-{
-	PouchOfJade = 0,
-	HeapOfJade = 1,
-	ChestOfJade  = 2,
-	CartOfJade = 3,
-	VaultOfJade = 4,
-	None = 10,
-}
-
 [System.Serializable]
 public class IAPProduct
 {
-	public IAPProductID brainzProductId;
+	public string brainzProductId;
 	public string title;
 	public string description;
 	public string price;
@@ -35,21 +25,20 @@ public interface IIAPPlatform
 {
 	void Dispose ();
 	bool CanMakePayments  { get; }
-	void PurchaseProduct (IAPProductID id, int i);
-	void ConsumeProduct (IAPProductID id);
+	void PurchaseProduct (string id, int i);
+	void ConsumeProduct (string id);
 	List<IAPProduct> Products{get;}
 	event Action<IAPPlatformID> ProductListReceivedDelegate;
 	event Action<IAPPlatformID, string /*error*/> ProductListRequestFailedDelegate;
-	event Action<IAPProductID /*id*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
+	event Action<string /*brainzProductId*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
 	event Action<IAPPlatformID, string /*error*/> PurchaseFailedDelegate;
 	event Action<IAPPlatformID, string /*error*/> PurchaseCancelledDelegate;
 	void RequestAllProductData(MonoBehaviour caller);
-	string GetCurrencyPrice (IAPProductID productId);
-	string GetPriceWithoutDiscount (IAPProductID product, float discountPercent);
-	float GetPriceInFloat (IAPProductID productID);
+	string GetCurrencyPrice (string brainzProductId);
+	string GetPriceWithoutDiscount (string brainzProductId, float discountPercent);
+	float GetPriceInFloat (string brainzProductId);
 	void ValidatePedingPurchases ();
-	string StoreName { get; }
 	Hashtable GetLastTransactionData();
-	IAPProductID GetBrainzProductIdByIAPProductId (string productID);
-	string GetPriceStringByBrainzProductId (IAPProductID productID);
+	string GetBrainzProductIdByIAPProductId (string productID);
+	string GetPriceStringByBrainzProductId (string brainzProductId);
 }

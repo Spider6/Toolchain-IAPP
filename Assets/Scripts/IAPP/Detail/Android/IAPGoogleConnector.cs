@@ -3,37 +3,50 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-#if UNITY_ANDROID
+
 public class IAPGoogleConnector : IIAPGoogleConnector
 {
+
 	public event Action BillingSupportedDelegate;
 	public event Action<string> BillingNotSupportedDelegate;
 	public event Action<List<IGooglePurchaseInfo>, List<IGoogleProductInfo>> ProductListReceivedDelegate;
 	public event Action<string> ProductListRequestFailedDelegate;
 	public event Action<IGooglePurchaseInfo> PurchaseSucceededDelegate;
 	public event Action<string> PurchaseFailedDelegate;
-	
+
+
 	public void Initialize(string publicKey)
 	{
+		#if UNITY_ANDROID
 		GoogleIAB.init(publicKey);
-		RegisterCallbacks();
+		#endif
 	}
 
 	public void PurchaseProduct(string iapProductId, string developerPayload)
 	{
+		#if UNITY_ANDROID
 		GoogleIAB.purchaseProduct(iapProductId, developerPayload);
+		#endif
 	}
 
 	public void ConsumeProduct(string iapProductId)
 	{
+		#if UNITY_ANDROID
 		GoogleIAB.consumeProduct(iapProductId);
+		#endif
 	}
 
 	public void GetProducts(string[] iapProductIds)
 	{
-		foreach(string id in iapProductIds)
-			Debug.Log("IdProduct: " + id);
+		#if UNITY_ANDROID
 		GoogleIAB.queryInventory(iapProductIds);
+		#endif
+	}
+
+	#if UNITY_ANDROID
+	public IAPGoogleConnector()
+	{
+		RegisterCallbacks();
 	}
 
 	private void RegisterCallbacks()
@@ -60,7 +73,6 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 	
 	private void OnProductListReceived(List<GooglePurchase> purchasesList, List<GoogleSkuInfo> iabProductList)
 	{
-		Debug.Log("purchasesList: " + purchasesList.Count + " iabProductList: " + iabProductList);
 		if(ProductListReceivedDelegate != null)
 			ProductListReceivedDelegate(ToPurchaseInfoList(purchasesList), ToProductInfoList(iabProductList));
 	}
@@ -114,6 +126,5 @@ public class IAPGoogleConnector : IIAPGoogleConnector
 		purchaseInfo.PurchaseInfo = googlePurchaseInfo;
 		return purchaseInfo;
 	}
-
+	#endif
 }
-#endif

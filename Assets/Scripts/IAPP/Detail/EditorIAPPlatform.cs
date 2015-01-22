@@ -7,9 +7,6 @@ public class EditorIAPPlatform : DummyIAPPlatform
 {
 	private float storeDebugDelayInSeconds;
 
-	public override void ConsumeProduct(IAPProductID id){}
-	public override void Dispose(){}
-
 	public EditorIAPPlatform (List<IIAPProductData> products, float timeOutToStore,
 	                          List<IAPProduct> debugProducts, float storeDebugDelayInSeconds) : base(products, timeOutToStore)
 	{
@@ -17,7 +14,10 @@ public class EditorIAPPlatform : DummyIAPPlatform
 		this.storeDebugDelayInSeconds = storeDebugDelayInSeconds;
 	}
 
-	public override void PurchaseProduct(IAPProductID brainzProductId, int quantity)
+	public override void ConsumeProduct(string brainzProductId){}
+	public override void Dispose(){}
+
+	public override void PurchaseProduct(string brainzProductId, int quantity)
 	{
 		caller.StartCoroutine (PurchaseAsync(brainzProductId, quantity));
 	}
@@ -40,7 +40,7 @@ public class EditorIAPPlatform : DummyIAPPlatform
 	    OnProductListReceived(PlatformId);
 	}
 	
-	private IEnumerator PurchaseAsync(IAPProductID brainzProductId, int quantity)
+	private IEnumerator PurchaseAsync(string brainzProductId, int quantity)
 	{
 		yield return new WaitForSeconds (storeDebugDelayInSeconds);
 

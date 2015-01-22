@@ -6,6 +6,6 @@ public interface IIAPManager
 {
 	IIAPPlatform IAPPlatform {get;}
 	bool AreProductsLoaded {get;}
-	bool PurchaseProduct(IAPProductID id);
-	void ConsumeProduct(IAPProductID id);
+	bool PurchaseProduct(string brainzProductId);
+	void ConsumeProduct(string brainzProductId);
 }

@@ -1,12 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class IAPManager : MonoBehaviour, IIAPManager 
-{	
-	[SerializeField]
-	private DebugData debugData;
-
+public class IAPManager : IIAPManager
+{
 	private IIAPPlatform iaPPPlatform;
 	public IIAPPlatform IAPPlatform
 	{
@@ -17,60 +14,70 @@ public class IAPManager : MonoBehaviour, IIAPManager
 	{
 		get { return IAPPlatform.Products.Count > 0; }
 	}
-
-	private void Awake()
+	
+	public void Initialize(IDebugStoreData debugData, IStoreSettings storeSettings, List<IIAPProductData> iapProductList, RuntimePlatform currentPlatform)
 	{
-		SetIAPPPlatform (debugData.SimulateStore.IAPProducts.ConvertAll(p => p as IIAPProductData), debugData.TimeOutToStore);
-	}
-
-	private void SetIAPPPlatform (List<IIAPProductData> products, float timeOutToStore)
-	{
-
-		#if UNITY_EDITOR
-		iaPPPlatform = new EditorIAPPlatform (products, timeOutToStore, debugData.DebugProducts, debugData.StoreDebugDelayInSeconds);
-		#elif UNITY_IPHONE
-		iaPPPlatform = new StoreKitPlatform(products, timeOutToStore);
-		#elif UNITY_ANDROID
-		iaPPPlatform = new GoogleIAPPlatform (products, timeOutToStore, new IAPGoogleConnector(), debugData.GooglePublicKey);
-		#else
-		iaPPPlatform = new DummyIAPPlatform(products, timeOutToStore);
-		#endif
+		SetIAPPPlatform (iapProductList, currentPlatform, debugData, storeSettings);
 	}
 	
-	private void OnDestroy()
+	private void SetIAPPPlatform (List<IIAPProductData> products, RuntimePlatform currentPlatform, IDebugStoreData debugData, IStoreSettings storeSettings)
+	{
+		Debug.Log("Current Platform: " + currentPlatform.ToString());
+		switch(currentPlatform)
+		{
+		case RuntimePlatform.Android: 
+			iaPPPlatform = new GoogleIAPPlatform (products, storeSettings.TimeOutToStore, new IAPGoogleConnector(), storeSettings.GooglePublicKey);
+			break;
+			
+		case RuntimePlatform.IPhonePlayer:
+			iaPPPlatform = new IOSPlatform(products, storeSettings.TimeOutToStore, new IAPIOSConnector());
+			break;
+			
+		case RuntimePlatform.OSXEditor:
+		case RuntimePlatform.WindowsEditor:
+			iaPPPlatform = new EditorIAPPlatform (products, storeSettings.TimeOutToStore, debugData.DebugProducts, debugData.StoreDebugDelayInSeconds);
+			break;
+			
+		default:
+			iaPPPlatform = new DummyIAPPlatform(products, storeSettings.TimeOutToStore);
+			break;
+		}
+	}
+	
+	public void Dispose()
 	{
 		if (IAPPlatform != null)
 			IAPPlatform.Dispose();
 	}
 	
-	public bool PurchaseProduct(IAPProductID id)
+	public bool PurchaseProduct(string brainzProductId)
 	{
-		Debug.Log("Trying to  purchase of " + id);
+		Debug.Log("Trying to  purchase of " + brainzProductId);
 		if (IAPPlatform.CanMakePayments)
-			return CanToPurchaseProduct (id);
+			return CanToPurchaseProduct (brainzProductId);
 		else
 		{
-			Debug.Log("Purchase of " + id + " failed because purchases are forbidden on this device.");
+			Debug.Log("Purchase of " + brainzProductId + " failed because purchases are forbidden on this device.");
 			return false;
 		}
 	}
-
-	private bool CanToPurchaseProduct (IAPProductID id)
+	
+	public void ConsumeProduct(string brainzProductId)
+	{
+		IAPPlatform.ConsumeProduct(brainzProductId);
+	}
+	
+	private bool CanToPurchaseProduct (string brainzProductId)
 	{
 		if (AreProductsLoaded) 
 		{
-			IAPPlatform.PurchaseProduct (id, 1);
+			IAPPlatform.PurchaseProduct (brainzProductId, 1);
 			return true;
 		}
 		else 
 		{
-			Debug.Log ("Purchase of " + id + " failed because product list is not loaded yet.");
+			Debug.Log ("Purchase of " + brainzProductId + " failed because product list is not loaded yet.");
 			return false;
 		}
-	}
-
-	public void ConsumeProduct(IAPProductID id)
-	{
-		IAPPlatform.ConsumeProduct(id);
 	}
 }

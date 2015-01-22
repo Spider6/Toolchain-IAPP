@@ -8,7 +8,7 @@ public class TestShop : MonoBehaviour
 	private Text textBox;
 
 	[SerializeField]
-	private IAPManager iapManager;
+	private IAPManagerContainer iapManager;
 
 
 	private IIAPPlatform CurrentIAPPlatform
@@ -69,10 +69,10 @@ public class TestShop : MonoBehaviour
 
 	public void PurchaseProduct()
 	{
-		iapManager.PurchaseProduct(IAPProductID.PouchOfJade);
+		iapManager.PurchaseProduct("PouchOfJade");
 	}
 
-	private void OnPurchaseSuccessful(IAPProductID brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
+	private void OnPurchaseSuccessful(string brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
 	{
 		textBox.text += "\n=============Product Purchase=============\n";
 		textBox.text += "BrainzId: " + brainzProductId +  "\n";

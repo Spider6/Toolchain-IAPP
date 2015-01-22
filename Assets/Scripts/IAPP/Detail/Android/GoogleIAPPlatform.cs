@@ -29,23 +29,18 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	{
 		get { return IAPPlatformID.GoogleIAB; }
 	}
-	
-	public override string StoreName
-	{
-		get { return "Play Store"; }
-	}
-
-	public override void Dispose()
-	{
-		products.Clear();
-		UnregisterCallbacks();
-	}
 
 	public GoogleIAPPlatform(List<IIAPProductData> products, float timeOutToStore, IIAPGoogleConnector connector, string publicKey): base(products, timeOutToStore)
 	{
 		this.connector = connector;
 		RegisterCallbacks();
 		this.connector.Initialize(publicKey);
+	}
+
+	public override void Dispose()
+	{
+		products.Clear();
+		UnregisterCallbacks();
 	}
 
 	public override Hashtable GetLastTransactionData()
@@ -67,12 +62,12 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		return transactionData;
 	}
 
-	public override void PurchaseProduct (IAPProductID brainzProductId, int quantity)
+	public override void PurchaseProduct (string brainzProductId, int quantity)
 	{
 		connector.PurchaseProduct (BrainzProductIdToIAPProductId(brainzProductId), Guid.NewGuid().ToString ());
 	}
 	
-	public override void ConsumeProduct (IAPProductID brainzProductId)
+	public override void ConsumeProduct (string brainzProductId)
 	{
 		RemovePedingProductToPurchase (brainzProductId);
 		connector.ConsumeProduct(BrainzProductIdToIAPProductId(brainzProductId));
@@ -90,7 +85,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		connector.GetProducts(GetAllIAPProductId());
 	}
 
-	private void RemovePedingProductToPurchase (IAPProductID brainzProductId)
+	private void RemovePedingProductToPurchase (string brainzProductId)
 	{
 		IGooglePurchaseInfo currentProduct;
 		IGooglePurchaseInfo product = pedingPurchases.Find(p => p.ProductId == BrainzProductIdToIAPProductId (brainzProductId));
@@ -137,15 +132,15 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		foreach (IGoogleProductInfo iabProduct in iabProductList) 
 		{
 			Debug.Log (iabProduct.ToString () + " this is the products to purchase");
-			IAPProductID brainzProductId = IAPProductIDToBrainzProductId (iabProduct.ProductId);
-			if (brainzProductId != IAPProductID.None)
+			string brainzProductId = IAPProductIDToBrainzProductId (iabProduct.ProductId);
+			if (!string.IsNullOrEmpty(brainzProductId))
 				AddIAPProduct (iabProduct, brainzProductId);
 			else
 				Debug.LogWarning ("An unrecognized IAP product was reported by Google Store. Identifier: " + iabProduct.ProductId);
 		}
 	}
 
-	private void AddIAPProduct (IGoogleProductInfo iabProduct, IAPProductID brainzProductId)
+	private void AddIAPProduct (IGoogleProductInfo iabProduct, string brainzProductId)
 	{
 		if (iabProduct.PriceCurrencyCode != null && iabProduct.Description != null && iabProduct.Price != null && iabProduct.Title != null) 
 		{
@@ -166,7 +161,7 @@ public class GoogleIAPPlatform : IAPPlatformBase
 		SetCurrencyPrice (iabProduct.ProductId, iabProduct.Price);
 	}
 
-	private IAPProduct CreateIAPProduct(IGoogleProductInfo iabProduct, IAPProductID brainzProductId)
+	private IAPProduct CreateIAPProduct(IGoogleProductInfo iabProduct, string brainzProductId)
 	{
 		IAPProduct newProduct = new IAPProduct();
 		newProduct.currencySymbol = iabProduct.PriceCurrencyCode;
@@ -198,8 +193,8 @@ public class GoogleIAPPlatform : IAPPlatformBase
 	
 	private void OnPurchaseSuccedded(IGooglePurchaseInfo data)
 	{
-		IAPProductID brainzProductId = IAPProductIDToBrainzProductId(data.ProductId);
-		if ( brainzProductId != IAPProductID.None)
+		string brainzProductId = IAPProductIDToBrainzProductId(data.ProductId);
+		if (!string.IsNullOrEmpty(brainzProductId))
 		{
 			lastTransactionData = data;
 			OnPurchaseSuccessful(brainzProductId, 1, PlatformId, CreateHashtableForPurchaseSuccedded(data, brainzProductId));
@@ -208,11 +203,11 @@ public class GoogleIAPPlatform : IAPPlatformBase
 			Debug.LogWarning("An unrecognized IAP product was reported by Google IAB. Identifier=" + data.ProductId);
 	}
 
-	private Hashtable CreateHashtableForPurchaseSuccedded(IGooglePurchaseInfo data, IAPProductID brainzProductId)
+	private Hashtable CreateHashtableForPurchaseSuccedded(IGooglePurchaseInfo data, string brainzProductId)
 	{
 		Hashtable table = new Hashtable();
 		table.Add ("orderId" , data.OrderId);
-		table.Add ("brainzProductId" , brainzProductId.ToString ());
+		table.Add ("brainzProductId" , brainzProductId);
 		table.Add ("purchaseTime" , data.PurchaseTime.ToString ());
 		table.Add ("productId" , data.ProductId);
 		table.Add ("purchaseState" , data.PurchaseState);

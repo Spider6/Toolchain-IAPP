@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 public class DummyIAPProduct
 {
-	public DummyIAPProduct (IAPProductID brainzProductId)
+	public DummyIAPProduct (string brainzProductId)
 	{
-		BrainzProductId = brainzProductId.ToString ();
+		BrainzProductId = brainzProductId;
 	}
 
 	public string BrainzProductId { get; private set; }
@@ -36,23 +36,18 @@ public class DummyIAPPlatform : IAPPlatformBase
 		get { return IAPPlatformID.Dummy; }
 	}
 
-	public override string StoreName
-	{
-		get { return IAPPlatformID.Dummy.ToString(); }
-	}
-
 	public override void ValidatePedingPurchases (){}
-	public override void ConsumeProduct(IAPProductID id) {}
+	public override void ConsumeProduct(string brainzProductId) {}
 
 	public DummyIAPPlatform (List<IIAPProductData> products, float timeOutToStore) : base(products, timeOutToStore)
 	{
 		dummyProducts = new List<IAPProduct>();
 	}
 
-	public override void PurchaseProduct(IAPProductID id, int quantity)
+	public override void PurchaseProduct(string brainzProductId, int quantity)
 	{
-		Hashtable table = GetInfoPurchaseProduct (id, quantity);
-		OnPurchaseSuccessful(id, quantity, PlatformId, table);
+		Hashtable table = GetInfoPurchaseProduct (brainzProductId, quantity);
+		OnPurchaseSuccessful(brainzProductId, quantity, PlatformId, table);
 	}
 
 	public override void Dispose()
@@ -84,7 +79,7 @@ public class DummyIAPPlatform : IAPPlatformBase
 		OnProductListRequestFailed(PlatformId, "failed!!");
 	}
 
-	protected Hashtable GetInfoPurchaseProduct (IAPProductID brainzProductId, int quantity)
+	protected Hashtable GetInfoPurchaseProduct (string brainzProductId, int quantity)
 	{
 		DummyIAPProduct data = GetDummyIAPProduct (brainzProductId);
 		lastTransactionData = data;
@@ -93,13 +88,13 @@ public class DummyIAPPlatform : IAPPlatformBase
 		table.Add ("brainzProductId" , data.BrainzProductId);
 		table.Add ("productId" , data.IAPProductId);
 		table.Add ("purchaseToken" , data.PurchaseToken);
-		table.Add ("pack", brainzProductId.ToString ());
+		table.Add ("pack", brainzProductId);
 		table.Add ("receipt", data.OrderId);
 		return table;
 	}
 
-	private DummyIAPProduct GetDummyIAPProduct (IAPProductID id)
+	private DummyIAPProduct GetDummyIAPProduct (string brainzProductId)
 	{
-		return new DummyIAPProduct (id);
+		return new DummyIAPProduct (brainzProductId);
 	}
 }

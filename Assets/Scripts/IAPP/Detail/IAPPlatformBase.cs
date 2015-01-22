@@ -8,7 +8,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 {
 	public event Action<IAPPlatformID> ProductListReceivedDelegate;
 	public event Action<IAPPlatformID, string /*error*/> ProductListRequestFailedDelegate;
-	public event Action<IAPProductID/*brainzProductId*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
+	public event Action<string/*brainzProductId*/, int /*quantity*/, IAPPlatformID, Hashtable /* transactionData */> PurchaseSuccessfulDelegate;
 	public event Action<IAPPlatformID, string /*error*/> PurchaseFailedDelegate;
 	public event Action<IAPPlatformID, string /*error*/> PurchaseCancelledDelegate;
 
@@ -17,7 +17,6 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	public abstract bool CanMakePayments { get; }
 	public abstract List<IAPProduct> Products { get; }
 	public abstract IAPPlatformID PlatformId { get; }
-	public abstract string StoreName { get; }
 
 	public bool HasProducts 
 	{ 
@@ -33,23 +32,23 @@ public abstract class IAPPlatformBase : IIAPPlatform
 	protected MonoBehaviour caller;
 	private bool isTryToLoadProducts = false;
 	private Dictionary<string, IAPProductInfo> allProducts;
-	
-	public IAPProductID GetBrainzProductIdByIAPProductId (string productID)
-	{
-		return IAPProductIDToBrainzProductId (productID);
-	}
-
-	public abstract void ValidatePedingPurchases ();
-	public abstract void PurchaseProduct(IAPProductID brainzProductId, int quantity);
-	public abstract void ConsumeProduct(IAPProductID brainzProductId);
-	public abstract void Dispose();
-	public abstract Hashtable GetLastTransactionData();
-	protected abstract void GetProductsDataFromStore();
 
 	public IAPPlatformBase(List<IIAPProductData> products, float timeOutToStore)
 	{
 		this.timeOutToStore = timeOutToStore;
 		CreateProductInfo(products);
+	}
+
+	public abstract void ValidatePedingPurchases ();
+	public abstract void PurchaseProduct(string brainzProductId, int quantity);
+	public abstract void ConsumeProduct(string brainzProductId);
+	public abstract void Dispose();
+	public abstract Hashtable GetLastTransactionData();
+	protected abstract void GetProductsDataFromStore();
+
+	public string GetBrainzProductIdByIAPProductId (string productID)
+	{
+		return IAPProductIDToBrainzProductId (productID);
 	}
 
 	public virtual void RequestAllProductData(MonoBehaviour caller)
@@ -63,7 +62,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		}
 	}
 
-	public string GetCurrencyPrice (IAPProductID brainzProductId)
+	public string GetCurrencyPrice (string brainzProductId)
 	{
 		string productId = BrainzProductIdToIAPProductId (brainzProductId);
 		IAPProductInfo product = allProducts[productId];
@@ -74,20 +73,20 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		return string.Empty;
 	}
 
-	public string GetPriceWithoutDiscount (IAPProductID product, float discountPercent)
+	public string GetPriceWithoutDiscount (string product, float discountPercent)
 	{
 		float price = GetPriceInFloat (product);
 		float originalValue = (price * 100f) / (100f - discountPercent);
 		return CurrencyCode + originalValue.ToString ("0");
 	}
 
-	public float GetPriceInFloat (IAPProductID productID)
+	public float GetPriceInFloat (string productID)
 	{
 		string currencyPrice = GetCurrencyPrice(productID);
 		return GetValueFromPriceString (currencyPrice);
 	}
 
-	public string GetPriceStringByBrainzProductId (IAPProductID brainzProductID)
+	public string GetPriceStringByBrainzProductId (string brainzProductID)
 	{
 		foreach(KeyValuePair<string, IAPProductInfo> entry in allProducts)
 		{
@@ -104,14 +103,14 @@ public abstract class IAPPlatformBase : IIAPPlatform
 			allProducts[productId].CurrencyPrice = price;
 	}
 	
-	protected string GetPriceByBrainzIAPProductId (IAPProductID brainzProductID)
+	protected string GetPriceByBrainzIAPProductId (string brainzProductID)
 	{
 		string priceValue = GetPriceStringByBrainzProductId (brainzProductID);
 		string price = Regex.Replace (priceValue, "[^,'0-9.]", "");
 		return price;
 	}
 	
-	protected string BrainzProductIdToIAPProductId(IAPProductID brainzProductId)
+	protected string BrainzProductIdToIAPProductId(string brainzProductId)
 	{
 		foreach(KeyValuePair<string, IAPProductInfo> entry in allProducts)
 		{
@@ -122,12 +121,12 @@ public abstract class IAPPlatformBase : IIAPPlatform
 		return string.Empty;
 	}
 	
-	protected IAPProductID IAPProductIDToBrainzProductId (string productId)
+	protected string IAPProductIDToBrainzProductId (string productId)
 	{
 		if(allProducts.ContainsKey(productId))
 			return allProducts [productId].BrainzProductId;
 		
-		return IAPProductID.None;
+		return string.Empty;
 	}
 	
 	protected void OnProductListReceived(IAPPlatformID platformId)
@@ -142,7 +141,7 @@ public abstract class IAPPlatformBase : IIAPPlatform
 			ProductListRequestFailedDelegate(platformId, error);
 	}
 	
-	protected void OnPurchaseSuccessful(IAPProductID brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
+	protected void OnPurchaseSuccessful(string brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
 	{
 		if(PurchaseSuccessfulDelegate != null)
 			PurchaseSuccessfulDelegate(brainzProductId, quantity, platformId, transactionData);

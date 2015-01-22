@@ -2,20 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-
-public interface IIAPProductData
-{
-	IAPProductID BrainzProductId { get; }
-	string IAPProductId { get; }
-}
-
-
 [System.Serializable]
 public class IAPProductData : IIAPProductData
 {
 	[SerializeField]
-	protected IAPProductID brainzProductId;
-	public IAPProductID BrainzProductId
+	protected string brainzProductId;
+	public string BrainzProductId
 	{
 		get { return brainzProductId; }
 	}
