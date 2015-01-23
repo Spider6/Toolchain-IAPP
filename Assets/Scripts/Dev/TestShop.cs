@@ -1,19 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using IAP;
 
 public class TestShop : MonoBehaviour 
 {
 	[SerializeField]
 	private Text textBox;
 
-	[SerializeField]
-	private IAPManagerContainer iapManager;
-
-
+	private IIAPManager IAPManager
+	{
+		get {return IAPDataManager.Instance.IAPManager;}
+	}
+	
 	private IIAPPlatform CurrentIAPPlatform
 	{
-		get{ return iapManager.IAPPlatform; }
+		get{ return IAPManager.IAPPlatform; }
 	}
 
 	private void Start()
@@ -22,12 +24,8 @@ public class TestShop : MonoBehaviour
 		CurrentIAPPlatform.ProductListRequestFailedDelegate += OnProductListRequestFiled;
 		CurrentIAPPlatform.PurchaseSuccessfulDelegate += OnPurchaseSuccessful;
 		CurrentIAPPlatform.PurchaseFailedDelegate += OnPurchaseFailed;
-
-		if(Application.platform == RuntimePlatform.Android)
-		{
-			(CurrentIAPPlatform as GoogleIAPPlatform).BillingSupportedDelegate += OnBillingSupported;
-			(CurrentIAPPlatform as GoogleIAPPlatform).BillingNotSupportedSupportedDelegate += OnBillingNotSupported;
-		}
+		CurrentIAPPlatform.BillingSupportedDelegate += OnBillingSupported;
+		CurrentIAPPlatform.BillingNotSupportedDelegate += OnBillingNotSupported;
 	}
 
 	public void OnProductListReceived(IAPPlatformID platformId)
@@ -69,7 +67,7 @@ public class TestShop : MonoBehaviour
 
 	public void PurchaseProduct()
 	{
-		iapManager.PurchaseProduct("PouchOfJade");
+		IAPManager.PurchaseProduct("PouchOfJade");
 	}
 
 	private void OnPurchaseSuccessful(string brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
