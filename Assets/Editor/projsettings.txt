@@ -1,3 +1,6 @@
 lastUpgrade=00911
 proj.AppId=183596506569
 android.SetupDone=true
+ios.ClientId=183596506569-tuk44183pjske5th6e0q58g87l2alr32.apps.googleusercontent.com
+ios.BundleId=co.brainz.herohavendev
+ios.SetupDone=true
