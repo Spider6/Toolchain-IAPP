@@ -33,6 +33,7 @@ namespace IAP.Detail
 		public GoogleIAPPlatform(List<IIAPProductData> products, float timeOutToStore, IIAPGoogleConnector connector, string publicKey): base(products, timeOutToStore)
 		{
 			this.connector = connector;
+			UnregisterCallbacks();
 			RegisterCallbacks();
 			this.connector.Initialize(publicKey);
 		}
@@ -222,12 +223,14 @@ namespace IAP.Detail
 
 		protected override void OnBillingSupported ()
 		{
+			Debug.Log("Supported");
 			supportsBilling = true;
 			base.OnBillingSupported();
 		}
 		
 		protected override void OnBillingNotSupported(string error)
 		{
+			Debug.Log("No Supported");
 			supportsBilling = false;
 			base.OnBillingNotSupported(error);
 		}

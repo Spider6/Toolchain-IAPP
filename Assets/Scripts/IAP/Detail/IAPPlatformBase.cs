@@ -129,6 +129,7 @@ namespace IAP.Detail
 		
 		protected void OnProductListRequestFailed(IAPPlatformID platformId, string error)
 		{
+			Debug.Log("Request Filed: " + error);
 			if(ProductListRequestFailedDelegate != null)
 				ProductListRequestFailedDelegate(platformId, error);
 		}
@@ -166,7 +167,8 @@ namespace IAP.Detail
 		protected void TurnOffTryToLoadProductsFlag ()
 		{
 			isTryToLoadProducts = false;
-			this.caller.StopCoroutine (CheckProductsTimeOut ());
+			if(caller != null)
+				this.caller.StopCoroutine (CheckProductsTimeOut ());
 		}
 
 		protected string[] GetAllIAPProductId()
@@ -175,6 +177,7 @@ namespace IAP.Detail
 			string[] ids = new string[allProducts.Keys.Count];
 			foreach( KeyValuePair<string, IAPProductInfo> entry in allProducts)
 			{
+				Debug.Log("ProductId: " + entry.Key);
 				ids[index] = entry.Key;
 				index++;
 			}

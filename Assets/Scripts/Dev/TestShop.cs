@@ -18,7 +18,7 @@ public class TestShop : MonoBehaviour
 		get{ return IAPManager.IAPPlatform; }
 	}
 
-	private void Start()
+	public void Initialize()
 	{
 		CurrentIAPPlatform.ProductListReceivedDelegate += OnProductListReceived;
 		CurrentIAPPlatform.ProductListRequestFailedDelegate += OnProductListRequestFiled;
@@ -65,11 +65,6 @@ public class TestShop : MonoBehaviour
 		CurrentIAPPlatform.RequestAllProductData(this);
 	}
 
-	public void PurchaseProduct()
-	{
-		IAPManager.PurchaseProduct("PouchOfJade");
-	}
-
 	private void OnPurchaseSuccessful(string brainzProductId, int quantity, IAPPlatformID platformId, Hashtable transactionData)
 	{
 		textBox.text += "\n=============Product Purchase=============\n";
@@ -86,5 +81,15 @@ public class TestShop : MonoBehaviour
 	private void OnPurchaseFailed(IAPPlatformID platformId, string error)
 	{
 		textBox.text += "Purchase product filed: Platform: " + platformId.ToString() + " Error: " + error;
+	}
+
+	private void OnDestroy()
+	{
+		CurrentIAPPlatform.ProductListReceivedDelegate -= OnProductListReceived;
+		CurrentIAPPlatform.ProductListRequestFailedDelegate -= OnProductListRequestFiled;
+		CurrentIAPPlatform.PurchaseSuccessfulDelegate -= OnPurchaseSuccessful;
+		CurrentIAPPlatform.PurchaseFailedDelegate -= OnPurchaseFailed;
+		CurrentIAPPlatform.BillingSupportedDelegate -= OnBillingSupported;
+		CurrentIAPPlatform.BillingNotSupportedDelegate -= OnBillingNotSupported;
 	}
 }

@@ -18,6 +18,7 @@ public class IAPProductData : IIAPProductData
 	public string IAPProductId
 	{
 		get { return iapProductId; }
+		set { iapProductId = value; }
 	}
 }
 

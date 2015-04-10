@@ -9,6 +9,7 @@ public class TestGameAdapter : MonoBehaviour
 	{
 		manager = new GamingNetworkManager();
 		manager.Initialize(Application.platform);
+		Authenticate();
 	}
 
 	public void Authenticate()
